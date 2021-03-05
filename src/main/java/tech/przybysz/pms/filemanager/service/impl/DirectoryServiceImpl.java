@@ -8,6 +8,7 @@ import tech.przybysz.pms.filemanager.domain.Directory;
 import tech.przybysz.pms.filemanager.repository.DirectoryRepository;
 import tech.przybysz.pms.filemanager.service.DirectoryService;
 import tech.przybysz.pms.filemanager.service.dto.DirectoryDTO;
+import tech.przybysz.pms.filemanager.service.mapper.DirectoryMapper;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -21,13 +22,22 @@ public class DirectoryServiceImpl implements DirectoryService {
   private final Logger log = LoggerFactory.getLogger(DirectoryServiceImpl.class);
 
   private final DirectoryRepository directoryRepository;
+  private final DirectoryMapper mapper;
 
-  public DirectoryServiceImpl(DirectoryRepository directoryRepository) {
+  public DirectoryServiceImpl(DirectoryRepository directoryRepository, DirectoryMapper mapper) {
     this.directoryRepository = directoryRepository;
+    this.mapper = mapper;
   }
 
   @Override
-  public DirectoryDTO save(DirectoryDTO directoryDTO) {
+  public DirectoryDTO update(DirectoryDTO directoryDTO) {
+
+
+    return null;
+  }
+
+  @Override
+  public DirectoryDTO create(DirectoryDTO directoryDTO) {
 
 
     return null;
@@ -37,7 +47,7 @@ public class DirectoryServiceImpl implements DirectoryService {
   public List<DirectoryDTO> findAllChildren(Long parentId) {
     log.debug("Request to get all child Directories of Directory {}", parentId);
     return directoryRepository.findAll().stream()
-        .map(applicationMapper::toDto)
+        .map(mapper::toDto)
         .collect(Collectors.toCollection(LinkedList::new));
   }
 
@@ -46,7 +56,7 @@ public class DirectoryServiceImpl implements DirectoryService {
   public List<DirectoryDTO> findAll() {
     log.debug("Request to get all Directories");
     return directoryRepository.findAll().stream()
-        .map(applicationMapper::toDto)
+        .map(mapper::toDto)
         .collect(Collectors.toCollection(LinkedList::new));
   }
 
@@ -55,7 +65,7 @@ public class DirectoryServiceImpl implements DirectoryService {
   public Optional<DirectoryDTO> findOne(Long id) {
     log.debug("Request to get Directory : {}", id);
     return directoryRepository.findById(id)
-        .map(applicationMapper::toDto);
+        .map(mapper::toDto);
   }
 
   @Override

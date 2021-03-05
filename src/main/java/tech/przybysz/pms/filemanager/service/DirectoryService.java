@@ -7,7 +7,9 @@ import java.util.Optional;
 
 public interface DirectoryService {
 
-  DirectoryDTO save(DirectoryDTO directoryDTO);
+  DirectoryDTO create(DirectoryDTO directoryDTO);
+
+  DirectoryDTO update(DirectoryDTO directoryDTO);
 
   List<DirectoryDTO> findAll();
 

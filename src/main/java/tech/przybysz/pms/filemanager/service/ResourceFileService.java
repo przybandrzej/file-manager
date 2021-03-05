@@ -7,7 +7,9 @@ import java.util.Optional;
 
 public interface ResourceFileService {
 
-  ResourceFileDTO save(ResourceFileDTO fileDTO);
+  ResourceFileDTO create(ResourceFileDTO fileDTO);
+
+  ResourceFileDTO update(ResourceFileDTO fileDTO);
 
   List<ResourceFileDTO> findAll();
 

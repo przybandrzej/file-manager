@@ -13,7 +13,7 @@ import tech.przybysz.pms.filemanager.web.rest.util.ResponseUtil;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/directories")
+@RequestMapping("/api/resource-files")
 public class ResourceFileResource {
 
   private final Logger log = LoggerFactory.getLogger(ResourceFileResource.class);

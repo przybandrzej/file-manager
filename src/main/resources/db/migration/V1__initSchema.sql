@@ -26,6 +26,7 @@ CREATE TABLE public.resource_file (
     generated_name character varying(255),
     modified timestamp without time zone,
     original_name character varying(255),
+    backed_up boolean,
     parent_directory_id bigint NOT NULL
 );
 

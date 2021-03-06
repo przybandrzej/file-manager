@@ -29,9 +29,11 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
 
     implementation "org.mapstruct:mapstruct:${mapstruct_version}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstruct_version}"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 }
 
 test {

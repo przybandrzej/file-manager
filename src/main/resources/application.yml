@@ -45,3 +45,8 @@ server:
 
 storage:
   location: D:\storage
+  backup:
+    execute: false
+    locations:
+    mode: STRICT
+    copies-count: 1

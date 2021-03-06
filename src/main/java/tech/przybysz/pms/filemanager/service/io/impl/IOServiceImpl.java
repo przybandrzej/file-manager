@@ -1,13 +1,11 @@
 package tech.przybysz.pms.filemanager.service.io.impl;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import tech.przybysz.pms.filemanager.service.io.IOService;
 
-import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -16,30 +14,14 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class IOServiceImpl implements IOService {
 
-  @Value("${storage.location}")
-  private String storageLocation;
-
-  private Path storage;
-
-  @PostConstruct
-  public void init() {
-    storage = Paths.get(storageLocation);
-    try {
-      Files.createDirectories(storage);
-    } catch(IOException e) {
-      throw new StorageException("Could not initialize storage location [" + storageLocation + "]");
-    }
-  }
-
   @Override
-  public boolean save(String filename, InputStream stream) {
+  public boolean save(String filename, InputStream stream, Path storage) {
     if(filename == null || filename.isBlank() || stream == null) {
       throw new StorageException("File name or content is empty.");
     }
@@ -55,7 +37,7 @@ public class IOServiceImpl implements IOService {
                 + filename);
       }
       try(stream) {
-        Files.copy(stream, this.storage.resolve(filename));
+        Files.copy(stream, storage.resolve(filename));
       }
     } catch(IOException e) {
       throw new StorageException("Failed to store file " + filename);
@@ -64,7 +46,7 @@ public class IOServiceImpl implements IOService {
   }
 
   @Override
-  public File read(String filename) {
+  public File read(String filename, Path storage) {
     if(filename == null || filename.isBlank()) {
       throw new FileNotFoundException("Could not read file. The name is empty.", filename);
     }
@@ -85,7 +67,7 @@ public class IOServiceImpl implements IOService {
   }
 
   @Override
-  public List<String> readContent(String filename) {
+  public List<String> readContent(String filename, Path storage) {
     Path file = storage.resolve(filename);
 
     try(BufferedReader reader = Files.newBufferedReader(file)) {
@@ -96,7 +78,7 @@ public class IOServiceImpl implements IOService {
   }
 
   @Override
-  public Resource loadAsResource(String filename) {
+  public Resource loadAsResource(String filename, Path storage) {
     if(filename == null || filename.isEmpty()) {
       throw new FileNotFoundException("Could not read file. The name is empty.", filename);
     }
@@ -113,4 +95,12 @@ public class IOServiceImpl implements IOService {
     }
   }
 
+  @Override
+  public boolean remove(String filename, Path storage) {
+    try {
+      return Files.deleteIfExists(storage.resolve(filename));
+    } catch(IOException e) {
+      throw new StorageException("Could not delete file " + filename);
+    }
+  }
 }

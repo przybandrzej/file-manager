@@ -19,4 +19,7 @@ public interface ResourceFileService {
 
   List<ResourceFileDTO> findAllOfDirectory(Long directoryId);
 
+  // todo
+  // update parent dir
+  // update name
 }

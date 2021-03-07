@@ -1,8 +1,10 @@
 package tech.przybysz.pms.filemanager.service.impl;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tech.przybysz.pms.filemanager.configuration.properties.StorageProperties;
 import tech.przybysz.pms.filemanager.domain.ResourceFile;
 import tech.przybysz.pms.filemanager.service.DeleteService;
 import tech.przybysz.pms.filemanager.service.io.IOService;
@@ -20,21 +22,19 @@ import java.util.stream.Collectors;
 @Transactional
 public class DeleteServiceImpl implements DeleteService {
 
-  @Value("${storage.backup.execute}")
-  private Boolean isBackup;
-
-  @Value("${storage.backup.locations}")
-  private String[] backupLocations;
-
-  @Value("${storage.location}")
-  private String storageLocation;
+  private final boolean isBackup;
+  private final String[] backupLocations;
+  private final String storageLocation;
 
   private final IOService ioService;
 
   private List<Path> storages = new ArrayList<>();
 
-  public DeleteServiceImpl(IOService ioService) {
+  public DeleteServiceImpl(IOService ioService, StorageProperties storageProperties) {
     this.ioService = ioService;
+    this.isBackup = storageProperties.getBackup().getExecute();
+    this.backupLocations = storageProperties.getBackup().getLocations();
+    this.storageLocation = storageProperties.getLocation();
   }
 
   @PostConstruct

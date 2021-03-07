@@ -24,26 +24,23 @@ import java.util.stream.Collectors;
 @Transactional
 public class BackupServiceImpl implements BackupService {
 
-  @Value("${storage.backup.execute}")
-  private Boolean execute;
-
-  @Value("${storage.backup.locations}")
-  private String[] locations;
-
-  @Value("${storage.backup.mode}")
-  private BackupProperties.BackupMode mode;
-
-  @Value("${storage.backup.copies-count}")
-  private Integer count;
+  private final Boolean execute;
+  private final String[] locations;
+  private final BackupProperties.BackupMode mode;
+  private final Integer count;
 
   private final IOService ioService;
   private final ResourceFileService resourceFileService;
 
   private List<Path> storages = new ArrayList<>();
 
-  public BackupServiceImpl(IOService ioService, ResourceFileService resourceFileService) {
+  public BackupServiceImpl(IOService ioService, ResourceFileService resourceFileService, BackupProperties backupProperties) {
     this.ioService = ioService;
     this.resourceFileService = resourceFileService;
+    this.count = backupProperties.getCopiesCount();
+    this.mode = backupProperties.getMode();
+    this.locations = backupProperties.getLocations();
+    this.execute = backupProperties.getExecute();
   }
 
   @PostConstruct

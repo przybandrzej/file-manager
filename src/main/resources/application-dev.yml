@@ -1,8 +1,6 @@
 spring:
   application:
     name: FileManager
-  profiles:
-    active: dev
   jpa:
     properties:
       hibernate:
@@ -41,12 +39,12 @@ logging:
     tech.przybysz.pms.filemanager: DEBUG
 
 server:
-  port: 8080
+  port: 8081
 
 storage:
   location: D:\storage
   backup:
     execute: false
-    locations:
+    locations: []
     mode: STRICT
     copies-count: 1

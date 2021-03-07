@@ -23,13 +23,20 @@ import static org.springframework.http.HttpStatus.*;
 @ControllerAdvice
 public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
-  @ExceptionHandler(EntityNotFoundException.class)
-  protected ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException ex, WebRequest request) {
+  @ExceptionHandler({EntityNotFoundException.class, EntityNotFoundException.class})
+  protected ResponseEntity<Object> handleEntityNotFound(RuntimeException ex, WebRequest request) {
     Error apiError = new Error(NOT_FOUND);
-    String entity = ex.getIds().isEmpty() ? ex.getEntityId().toString() : ex.getIds().stream().map(Objects::toString)
-        .collect(Collectors.joining(","));
-    String name = ex.getEntity();
-    apiError.setMessage(name + "[" + entity + "]" + " not found.");
+    String message = "";
+    if(ex instanceof tech.przybysz.pms.filemanager.web.rest.util.EntityNotFoundException) {
+      message = "NOT FOUND";
+    } else {
+      EntityNotFoundException exception = (EntityNotFoundException) ex;
+      String entity = exception.getIds().isEmpty() ? exception.getEntityId().toString() : exception.getIds().stream().map(Objects::toString)
+          .collect(Collectors.joining(","));
+      String name = exception.getEntity();
+      message = name + "[" + entity + "]" + " not found.";
+    }
+    apiError.setMessage(message);
     return buildResponseEntity(apiError);
   }
 

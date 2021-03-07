@@ -3,10 +3,13 @@ package tech.przybysz.pms.filemanager.web.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tech.przybysz.pms.filemanager.service.DownloadService;
+import tech.przybysz.pms.filemanager.service.FileResource;
 import tech.przybysz.pms.filemanager.service.ResourceFileService;
 import tech.przybysz.pms.filemanager.service.UploadService;
 import tech.przybysz.pms.filemanager.service.dto.IDsDTO;
@@ -28,10 +31,12 @@ public class ResourceFileResource {
 
   private final ResourceFileService fileService;
   private final UploadService uploadService;
+  private final DownloadService downloadService;
 
-  public ResourceFileResource(ResourceFileService fileService, UploadService uploadService) {
+  public ResourceFileResource(ResourceFileService fileService, UploadService uploadService, DownloadService downloadService) {
     this.fileService = fileService;
     this.uploadService = uploadService;
+    this.downloadService = downloadService;
   }
 
   @GetMapping
@@ -73,7 +78,7 @@ public class ResourceFileResource {
         .body(save);
   }
 
-  @PostMapping(value = "/upload", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+  @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ResourceFileDTO>> upload(@RequestParam Long directoryId, @RequestPart("file") List<MultipartFile> files) {
     log.debug("REST request to upload {} ResourceFiles to Directory {}", files.size(), directoryId);
     List<ResourceFileDTO> save = uploadService.save(directoryId, files);
@@ -119,6 +124,17 @@ public class ResourceFileResource {
         .headers(HeaderUtil.createBulkEntityUpdateAlert(applicationName, true, ENTITY_NAME,
             save.stream().map(it -> it.getId().toString()).collect(Collectors.toList())))
         .body(save);
+  }
+
+  @GetMapping(value = "/{id}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+  public ResponseEntity<Resource> download(@PathVariable Long id) {
+    log.debug("REST request to download ResourceFile {}", id);
+    FileResource resource = downloadService.get(id);
+    return ResponseEntity.ok()
+        .headers(HeaderUtil.createDownloadFileAlert(applicationName, true,
+            resource.getFileName()))
+        .contentLength(resource.getResource().contentLength())
+        .body(resource.getResource());
   }
 
 }

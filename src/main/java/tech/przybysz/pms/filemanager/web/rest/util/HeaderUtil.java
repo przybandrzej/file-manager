@@ -152,4 +152,20 @@ public final class HeaderUtil {
         : "A " + entityName + " is updated with identifier " + param;
     return createAlert(applicationName, message, params);
   }
+
+  /**
+   * <p>downloadFileAlert.</p>
+   *
+   * @param applicationName a {@link java.lang.String} object.
+   * @param enableTranslation a boolean.
+   * @param fileName a {@link java.lang.String} object.
+   * @return a {@link org.springframework.http.HttpHeaders} object.
+   */
+  public static HttpHeaders createDownloadFileAlert(String applicationName, boolean enableTranslation, String fileName) {
+    String message = enableTranslation ? applicationName + ".file.downloaded"
+        : "A file is downloaded with name " + fileName;
+    HttpHeaders headers = createAlert(applicationName, message, fileName);
+    headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+    return headers;
+  }
 }

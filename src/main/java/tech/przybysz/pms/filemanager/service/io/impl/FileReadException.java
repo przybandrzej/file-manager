@@ -8,4 +8,12 @@ public class FileReadException extends RuntimeException {
     super(msg);
     this.fileName = fileName;
   }
+
+  public String getFileName() {
+    return fileName;
+  }
+
+  public void setFileName(String fileName) {
+    this.fileName = fileName;
+  }
 }

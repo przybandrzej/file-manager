@@ -11,6 +11,7 @@ public class ResourceFileDTO {
   private Long parentDirectoryId;
   private LocalDateTime created;
   private LocalDateTime modified;
+  private Boolean backedUp;
 
   public Long getId() {
     return id;
@@ -68,6 +69,14 @@ public class ResourceFileDTO {
     this.modified = modified;
   }
 
+  public Boolean getBackedUp() {
+    return backedUp;
+  }
+
+  public void setBackedUp(Boolean backedUp) {
+    this.backedUp = backedUp;
+  }
+
   @Override
   public boolean equals(Object o) {
     if(this == o) {
@@ -94,6 +103,7 @@ public class ResourceFileDTO {
         ", parentDirectoryId=" + parentDirectoryId +
         ", created=" + created +
         ", modified=" + modified +
+        ", backedUp=" + backedUp +
         '}';
   }
 }

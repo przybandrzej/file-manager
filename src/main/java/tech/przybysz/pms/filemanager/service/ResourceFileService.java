@@ -1,5 +1,6 @@
 package tech.przybysz.pms.filemanager.service;
 
+import tech.przybysz.pms.filemanager.service.dto.IDsDTO;
 import tech.przybysz.pms.filemanager.service.dto.ResourceFileDTO;
 
 import java.util.List;
@@ -19,4 +20,11 @@ public interface ResourceFileService {
 
   List<ResourceFileDTO> findAllOfDirectory(Long directoryId);
 
+  ResourceFileDTO updateName(Long id, String name);
+
+  ResourceFileDTO updateParentDirectory(Long id, Long parentDirectoryId);
+
+  void delete(IDsDTO ids);
+
+  List<ResourceFileDTO> updateParentDirectory(IDsDTO ids, Long parentDirectoryId);
 }

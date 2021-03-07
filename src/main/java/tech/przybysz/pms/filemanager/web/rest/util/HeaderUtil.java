@@ -7,6 +7,8 @@ import org.springframework.http.HttpHeaders;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Utility class for HTTP headers creation.
@@ -101,5 +103,53 @@ public final class HeaderUtil {
     headers.add("X-" + applicationName + "-error", message);
     headers.add("X-" + applicationName + "-params", entityName);
     return headers;
+  }
+
+  /**
+   * <p>createBulkEntityCreationAlert.</p>
+   *
+   * @param applicationName a {@link java.lang.String} object.
+   * @param enableTranslation a boolean.
+   * @param entityName a {@link java.lang.String} object.
+   * @param param a {@link java.lang.String} object.
+   * @return a {@link org.springframework.http.HttpHeaders} object.
+   */
+  public static HttpHeaders createBulkEntityCreationAlert(String applicationName, boolean enableTranslation, String entityName, List<String> param) {
+    String params = String.join(",", param);
+    String message = enableTranslation ? applicationName + "." + entityName + ".created"
+        : "New " + entityName + " are created with identifiers " + params;
+    return createAlert(applicationName, message, params);
+  }
+
+  /**
+   * <p>createBulkEntityDeletionAlert.</p>
+   *
+   * @param applicationName a {@link java.lang.String} object.
+   * @param enableTranslation a boolean.
+   * @param entityName a {@link java.lang.String} object.
+   * @param param a {@link java.lang.String} object.
+   * @return a {@link org.springframework.http.HttpHeaders} object.
+   */
+  public static HttpHeaders createBulkEntityDeletionAlert(String applicationName, boolean enableTranslation, String entityName, List<String> param) {
+    String params = String.join(",", param);
+    String message = enableTranslation ? applicationName + "." + entityName + ".deleted"
+        : "A " + entityName + " is deleted with identifier " + param;
+    return createAlert(applicationName, message, params);
+  }
+
+  /**
+   * <p>createBulkEntityUpdateAlert.</p>
+   *
+   * @param applicationName a {@link java.lang.String} object.
+   * @param enableTranslation a boolean.
+   * @param entityName a {@link java.lang.String} object.
+   * @param param a {@link java.lang.String} object.
+   * @return a {@link org.springframework.http.HttpHeaders} object.
+   */
+  public static HttpHeaders createBulkEntityUpdateAlert(String applicationName, boolean enableTranslation, String entityName, List<String> param) {
+    String params = String.join(",", param);
+    String message = enableTranslation ? applicationName + "." + entityName + ".updated"
+        : "A " + entityName + " is updated with identifier " + param;
+    return createAlert(applicationName, message, params);
   }
 }

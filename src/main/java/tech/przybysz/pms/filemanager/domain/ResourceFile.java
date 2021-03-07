@@ -29,6 +29,9 @@ public class ResourceFile implements Serializable {
   @Column(name = "modified")
   private LocalDateTime modified;
 
+  @Column(name = "backed_up")
+  private Boolean backedUp;
+
   @ManyToOne
   @JoinColumn(name = "parent_directory_id", referencedColumnName = "id", nullable = false)
   private Directory parentDirectory;
@@ -87,6 +90,14 @@ public class ResourceFile implements Serializable {
 
   public void setModified(LocalDateTime modified) {
     this.modified = modified;
+  }
+
+  public Boolean getBackedUp() {
+    return backedUp;
+  }
+
+  public void setBackedUp(Boolean backedUp) {
+    this.backedUp = backedUp;
   }
 
   @Override

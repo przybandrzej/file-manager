@@ -45,12 +45,16 @@ public class DirectoryServiceImpl implements DirectoryService {
     if(tmp.isEmpty()) {
       throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, directoryDTO.getId());
     }
-    Optional<Directory> parentTmp = directoryRepository.findById(directoryDTO.getParentId());
-    if(parentTmp.isEmpty()) {
-      throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, directoryDTO.getParentId());
+    Directory parent = null;
+    if(directoryDTO.getParentId() != null) {
+      Optional<Directory> parentTmp = directoryRepository.findById(directoryDTO.getParentId());
+      if(parentTmp.isEmpty()) {
+        throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, directoryDTO.getParentId());
+      }
+      parent = parentTmp.get();
     }
     Directory directory = tmp.get();
-    directory.setParent(parentTmp.get());
+    directory.setParent(parent);
     directory.setModified(LocalDateTime.now());
     directory.setName(directoryDTO.getName());
     return mapper.toDto(directoryRepository.save(directory));
@@ -58,12 +62,16 @@ public class DirectoryServiceImpl implements DirectoryService {
 
   @Override
   public DirectoryDTO create(DirectoryDTO directoryDTO) {
-    Optional<Directory> parentTmp = directoryRepository.findById(directoryDTO.getParentId());
-    if(parentTmp.isEmpty()) {
-      throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, directoryDTO.getParentId());
+    Directory parent = null;
+    if(directoryDTO.getParentId() != null) {
+      Optional<Directory> parentTmp = directoryRepository.findById(directoryDTO.getParentId());
+      if(parentTmp.isEmpty()) {
+        throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, directoryDTO.getParentId());
+      }
+      parent = parentTmp.get();
     }
     Directory directory = new Directory();
-    directory.setParent(parentTmp.get());
+    directory.setParent(parent);
     directory.setCreated(LocalDateTime.now());
     directory.setModified(LocalDateTime.now());
     directory.setName(directoryDTO.getName());
@@ -126,12 +134,16 @@ public class DirectoryServiceImpl implements DirectoryService {
     if(tmp.isEmpty()) {
       throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, id);
     }
-    Optional<Directory> parentTmp = directoryRepository.findById(parentDirectoryId);
-    if(parentTmp.isEmpty()) {
-      throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, parentDirectoryId);
+    Directory parent = null;
+    if(parentDirectoryId != null) {
+      Optional<Directory> parentTmp = directoryRepository.findById(parentDirectoryId);
+      if(parentTmp.isEmpty()) {
+        throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, parentDirectoryId);
+      }
+      parent = parentTmp.get();
     }
     Directory directory = tmp.get();
-    directory.setParent(parentTmp.get());
+    directory.setParent(parent);
     directory.setModified(LocalDateTime.now());
     return mapper.toDto(directoryRepository.save(directory));
   }
@@ -163,13 +175,18 @@ public class DirectoryServiceImpl implements DirectoryService {
     if(!next.isEmpty()) {
       throw new EntityNotFoundException(ENTITY_NAME, next);
     }
-    Optional<Directory> parentTmp = directoryRepository.findById(parentDirectoryId);
-    if(parentTmp.isEmpty()) {
-      throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, parentDirectoryId);
+    Directory parent = null;
+    if(parentDirectoryId != null) {
+      Optional<Directory> parentTmp = directoryRepository.findById(parentDirectoryId);
+      if(parentTmp.isEmpty()) {
+        throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, parentDirectoryId);
+      }
+      parent = parentTmp.get();
     }
+    Directory finalParent = parent;
     tmp.forEach(dir -> {
       dir.setModified(LocalDateTime.now());
-      dir.setParent(parentTmp.get());
+      dir.setParent(finalParent);
     });
     return directoryRepository.saveAll(tmp).stream().map(mapper::toDto).collect(Collectors.toList());
   }

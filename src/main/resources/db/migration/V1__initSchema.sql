@@ -3,7 +3,7 @@ CREATE TABLE public.directory (
     created timestamp without time zone,
     modified timestamp without time zone,
     name character varying(255),
-    parent_id bigint NOT NULL
+    parent_id bigint
 );
 
 ALTER TABLE public.directory OWNER TO file_manager;
@@ -27,7 +27,7 @@ CREATE TABLE public.resource_file (
     modified timestamp without time zone,
     original_name character varying(255),
     backed_up boolean,
-    parent_directory_id bigint NOT NULL
+    parent_directory_id bigint
 );
 
 ALTER TABLE public.resource_file OWNER TO file_manager;

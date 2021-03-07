@@ -32,6 +32,10 @@ spring:
       thread-name-prefix: file-manager-scheduling-
       pool:
         size: 2
+  servlet:
+    multipart:
+      max-request-size: -1
+      max-file-size: -1
 
 logging:
   level:

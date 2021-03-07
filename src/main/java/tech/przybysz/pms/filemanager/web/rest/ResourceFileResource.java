@@ -73,8 +73,8 @@ public class ResourceFileResource {
         .body(save);
   }
 
-  @PostMapping(value = "/upload/{directoryId}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-  public ResponseEntity<List<ResourceFileDTO>> upload(@PathVariable Long directoryId, @RequestPart("file") List<MultipartFile> files) {
+  @PostMapping(value = "/upload", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+  public ResponseEntity<List<ResourceFileDTO>> upload(@RequestParam Long directoryId, @RequestPart("file") List<MultipartFile> files) {
     log.debug("REST request to upload {} ResourceFiles to Directory {}", files.size(), directoryId);
     List<ResourceFileDTO> save = uploadService.save(directoryId, files);
     return ResponseEntity.ok()

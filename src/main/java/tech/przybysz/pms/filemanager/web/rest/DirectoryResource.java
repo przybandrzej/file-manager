@@ -3,9 +3,13 @@ package tech.przybysz.pms.filemanager.web.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.przybysz.pms.filemanager.service.DirectoryService;
+import tech.przybysz.pms.filemanager.service.DownloadService;
+import tech.przybysz.pms.filemanager.service.FileResource;
 import tech.przybysz.pms.filemanager.service.ResourceFileService;
 import tech.przybysz.pms.filemanager.service.dto.DirectoryDTO;
 import tech.przybysz.pms.filemanager.service.dto.IDsDTO;
@@ -27,10 +31,13 @@ public class DirectoryResource {
 
   private final DirectoryService directoryService;
   private final ResourceFileService fileService;
+  private final DownloadService downloadService;
 
-  public DirectoryResource(DirectoryService directoryService, ResourceFileService fileService) {
+  public DirectoryResource(DirectoryService directoryService, ResourceFileService fileService,
+                           DownloadService downloadService) {
     this.directoryService = directoryService;
     this.fileService = fileService;
+    this.downloadService = downloadService;
   }
 
   @GetMapping
@@ -120,5 +127,16 @@ public class DirectoryResource {
         .headers(HeaderUtil.createBulkEntityUpdateAlert(applicationName, true, ENTITY_NAME,
             save.stream().map(it -> it.getId().toString()).collect(Collectors.toList())))
         .body(save);
+  }
+
+  @GetMapping(value = "/{id}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+  public ResponseEntity<Resource> download(@PathVariable Long id) {
+    log.debug("REST request to download Directory {}", id);
+    FileResource resource = downloadService.getDirectory(id);
+    return ResponseEntity.ok()
+        .headers(HeaderUtil.createDownloadFileAlert(applicationName, true,
+            resource.getFileName()))
+        .contentLength(resource.getResource().contentLength())
+        .body(resource.getResource());
   }
 }

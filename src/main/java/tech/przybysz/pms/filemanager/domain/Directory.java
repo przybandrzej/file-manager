@@ -20,7 +20,7 @@ public class Directory implements Serializable {
   private String name;
 
   @ManyToOne
-  @JoinColumn(name = "parent_id", referencedColumnName = "id", nullable = false)
+  @JoinColumn(name = "parent_id", referencedColumnName = "id")
   private Directory parent;
 
   @Column(name = "created")

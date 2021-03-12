@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: FileManager
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+    hibernate:
+      ddl-auto: none
+  datasource:
+    url: jdbc:postgresql://localhost:5432/file_manager
+    username: file_manager
+    password: file_manager
+  messages:
+    basename: i18n/messages
+  thymeleaf:
+    enabled: true
+    check-template-location: true
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: true
+  task:
+    execution:
+      thread-name-prefix: file-manager-task-
+      pool:
+        core-size: 2
+        max-size: 50
+        queue-capacity: 10000
+    scheduling:
+      thread-name-prefix: file-manager-scheduling-
+      pool:
+        size: 2
+  servlet:
+    multipart:
+      max-request-size: -1
+      max-file-size: -1
+
+logging:
+  level:
+    ROOT: INFO
+    tech.przybysz.pms.filemanager: DEBUG
+
+server:
+  port: 8081
+
+storage:
+  location: D:\storage
+  backup:
+    execute: false
+    locations: []
+    mode: STRICT
+    copies-count: 1

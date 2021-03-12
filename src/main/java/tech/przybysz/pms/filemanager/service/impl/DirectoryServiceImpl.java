@@ -5,14 +5,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.przybysz.pms.filemanager.domain.Directory;
+import tech.przybysz.pms.filemanager.domain.ResourceFile;
 import tech.przybysz.pms.filemanager.repository.DirectoryRepository;
+import tech.przybysz.pms.filemanager.repository.ResourceFileRepository;
+import tech.przybysz.pms.filemanager.service.DeleteService;
 import tech.przybysz.pms.filemanager.service.DirectoryService;
 import tech.przybysz.pms.filemanager.service.dto.DirectoryDTO;
+import tech.przybysz.pms.filemanager.service.dto.IDsDTO;
 import tech.przybysz.pms.filemanager.service.mapper.DirectoryMapper;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,26 +24,58 @@ public class DirectoryServiceImpl implements DirectoryService {
 
   private final Logger log = LoggerFactory.getLogger(DirectoryServiceImpl.class);
 
+  public static final String ENTITY_NAME = "directory";
+
   private final DirectoryRepository directoryRepository;
   private final DirectoryMapper mapper;
+  private final ResourceFileRepository fileRepository;
+  private final DeleteService deleteService;
 
-  public DirectoryServiceImpl(DirectoryRepository directoryRepository, DirectoryMapper mapper) {
+  public DirectoryServiceImpl(DirectoryRepository directoryRepository, DirectoryMapper mapper,
+                              ResourceFileRepository fileRepository, DeleteService deleteService) {
     this.directoryRepository = directoryRepository;
     this.mapper = mapper;
+    this.fileRepository = fileRepository;
+    this.deleteService = deleteService;
   }
 
   @Override
   public DirectoryDTO update(DirectoryDTO directoryDTO) {
-
-
-    return null;
+    Optional<Directory> tmp = directoryRepository.findById(directoryDTO.getId());
+    if(tmp.isEmpty()) {
+      throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, directoryDTO.getId());
+    }
+    Directory parent = null;
+    if(directoryDTO.getParentId() != null) {
+      Optional<Directory> parentTmp = directoryRepository.findById(directoryDTO.getParentId());
+      if(parentTmp.isEmpty()) {
+        throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, directoryDTO.getParentId());
+      }
+      parent = parentTmp.get();
+    }
+    Directory directory = tmp.get();
+    directory.setParent(parent);
+    directory.setModified(LocalDateTime.now());
+    directory.setName(directoryDTO.getName());
+    return mapper.toDto(directoryRepository.save(directory));
   }
 
   @Override
   public DirectoryDTO create(DirectoryDTO directoryDTO) {
-
-
-    return null;
+    Directory parent = null;
+    if(directoryDTO.getParentId() != null) {
+      Optional<Directory> parentTmp = directoryRepository.findById(directoryDTO.getParentId());
+      if(parentTmp.isEmpty()) {
+        throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, directoryDTO.getParentId());
+      }
+      parent = parentTmp.get();
+    }
+    Directory directory = new Directory();
+    directory.setParent(parent);
+    directory.setCreated(LocalDateTime.now());
+    directory.setModified(LocalDateTime.now());
+    directory.setName(directoryDTO.getName());
+    return mapper.toDto(directoryRepository.save(directory));
   }
 
   @Override
@@ -75,37 +110,85 @@ public class DirectoryServiceImpl implements DirectoryService {
     if(directory.isEmpty()) {
       return;
     }
-    deleteInternals(directory.get());
-    directoryRepository.deleteById(id);
+    Set<ResourceFile> files = this.getFiles(directory.get());
+    deleteService.deleteFiles(files);
+    files.forEach(fileRepository::delete);
+    directoryRepository.delete(directory.get());
   }
 
-  private void deleteInternals(Directory directory) {
-    /*application.setMainDataType(null);
-    application.setConfigurationDataType(null);
-    application.setStartPage(null);
-    application.setLayoutPage(null);
-    applicationRepository.save(application);
-    applicationRepository.findAllByMasterSnapshotId(application.getId()).forEach(app -> delete(app.getId()));
-    applicationPageService.findAllOfApplication(application.getId()).forEach(page -> applicationPageService.deleteWithLock(page.getId()));
-    complexDataTypeService.findAllOfApplication(application.getId()).forEach(type -> complexDataTypeService.delete(type.getId()));
-    generationEntryService.findAllOfApplication(application.getId()).forEach(entry -> generationEntryService.delete(entry.getId()));
-    generationEntryService.findAllOfSnapshot(application.getId()).forEach(entry -> generationEntryService.delete(entry.getId()));
-    activeSnapshotService.findAllBySnapshotId(application.getId()).forEach(entry-> activeSnapshotService.delete(entry.getId()));
-    uiWidgetService.findAllByApplicationId(application.getId()).forEach(entry -> uiWidgetService.delete(entry.getId()));
+  @Override
+  public DirectoryDTO updateName(Long id, String name) {
+    Optional<Directory> tmp = directoryRepository.findById(id);
+    if(tmp.isEmpty()) {
+      throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, id);
+    }
+    Directory directory = tmp.get();
+    directory.setModified(LocalDateTime.now());
+    directory.setName(name);
+    return mapper.toDto(directoryRepository.save(directory));
+  }
 
-    if (application.getJsonAppConfiguration() != null) {
-      configurationService.deleteWithLock(application.getJsonAppConfiguration().getId());
+  @Override
+  public DirectoryDTO updateParentDirectory(Long id, Long parentDirectoryId) {
+    Optional<Directory> tmp = directoryRepository.findById(id);
+    if(tmp.isEmpty()) {
+      throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, id);
     }
-    if (application.getCss() != null) {
-      cssStorageService.deleteWithLock(application.getCss().getId());
+    Directory parent = null;
+    if(parentDirectoryId != null) {
+      Optional<Directory> parentTmp = directoryRepository.findById(parentDirectoryId);
+      if(parentTmp.isEmpty()) {
+        throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, parentDirectoryId);
+      }
+      parent = parentTmp.get();
     }
-    if (application.getConfigDataDirectory() != null) {
-      directoryService.delete(application.getConfigDataDirectory().getId());
+    Directory directory = tmp.get();
+    directory.setParent(parent);
+    directory.setModified(LocalDateTime.now());
+    return mapper.toDto(directoryRepository.save(directory));
+  }
+
+  @Override
+  public void delete(IDsDTO ids) {
+    log.debug("Request to delete Directories : {}", ids);
+    Collection<Directory> directories = directoryRepository.findAllById(ids.getIds());
+    if(directories.isEmpty()) {
+      return;
     }
-    if (application.getUserDataDirectory() != null) {
-      directoryService.delete(application.getUserDataDirectory().getId());
+    List<ResourceFile> files = directories.stream().map(this::getFiles).flatMap(Set::stream).collect(Collectors.toList());
+    deleteService.deleteFiles(files);
+    files.forEach(fileRepository::delete);
+    directoryRepository.deleteAll(directories);
+  }
+
+  private Set<ResourceFile> getFiles(Directory dir) {
+    Set<ResourceFile> files = dir.getFiles();
+    dir.getChildren().forEach(child -> files.addAll(this.getFiles(child)));
+    return files;
+  }
+
+  @Override
+  public List<DirectoryDTO> updateParentDirectory(IDsDTO ids, Long parentDirectoryId) {
+    Collection<Directory> tmp = directoryRepository.findAllById(ids.getIds());
+    List<Long> next = ids.getIds();
+    next.removeAll(tmp.stream().map(Directory::getId).collect(Collectors.toList()));
+    if(!next.isEmpty()) {
+      throw new EntityNotFoundException(ENTITY_NAME, next);
     }
-    applicationRepository.deleteById(application.getId());*/
+    Directory parent = null;
+    if(parentDirectoryId != null) {
+      Optional<Directory> parentTmp = directoryRepository.findById(parentDirectoryId);
+      if(parentTmp.isEmpty()) {
+        throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, parentDirectoryId);
+      }
+      parent = parentTmp.get();
+    }
+    Directory finalParent = parent;
+    tmp.forEach(dir -> {
+      dir.setModified(LocalDateTime.now());
+      dir.setParent(finalParent);
+    });
+    return directoryRepository.saveAll(tmp).stream().map(mapper::toDto).collect(Collectors.toList());
   }
 }
 

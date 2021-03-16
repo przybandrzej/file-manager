@@ -111,7 +111,7 @@ public class ResourceFileResource {
     log.debug("REST request to delete ResourceFiles {}", ids);
     fileService.delete(ids);
     return ResponseEntity.noContent()
-        .headers(HeaderUtil.createBulkEntityCreationAlert(applicationName, true, ENTITY_NAME,
+        .headers(HeaderUtil.createBulkEntityDeletionAlert(applicationName, true, ENTITY_NAME,
             ids.getIds().stream().map(Object::toString).collect(Collectors.toList())))
         .build();
   }

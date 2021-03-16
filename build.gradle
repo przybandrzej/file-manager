@@ -21,12 +21,17 @@ repositories {
 defaultTasks "bootRun"
 
 def activeProfile = 'dev'
+if (project.hasProperty('prod')) {
+    activeProfile = 'prod'
+}
 
-bootRun {
-    if (project.hasProperty('prod')) {
-        activeProfile = 'prod'
+processResources {
+    inputs.property('springProfiles', activeProfile)
+    filesMatching("**/application.yml") {
+        filter {
+            it.replace("#spring.profiles.active#", activeProfile)
+        }
     }
-    systemProperty "spring.profiles.active", activeProfile
 }
 
 dependencies {
@@ -43,6 +48,8 @@ dependencies {
     implementation "org.mapstruct:mapstruct:${mapstruct_version}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstruct_version}"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    implementation "io.springfox:springfox-swagger2:2.9.2"
 }
 
 test {

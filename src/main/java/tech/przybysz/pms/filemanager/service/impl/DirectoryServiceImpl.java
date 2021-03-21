@@ -11,6 +11,7 @@ import tech.przybysz.pms.filemanager.repository.ResourceFileRepository;
 import tech.przybysz.pms.filemanager.service.DeleteService;
 import tech.przybysz.pms.filemanager.service.DirectoryService;
 import tech.przybysz.pms.filemanager.service.dto.DirectoryDTO;
+import tech.przybysz.pms.filemanager.service.dto.DirectoryPathDTO;
 import tech.przybysz.pms.filemanager.service.dto.IDsDTO;
 import tech.przybysz.pms.filemanager.service.mapper.DirectoryMapper;
 
@@ -189,6 +190,67 @@ public class DirectoryServiceImpl implements DirectoryService {
       dir.setParent(finalParent);
     });
     return directoryRepository.saveAll(tmp).stream().map(mapper::toDto).collect(Collectors.toList());
+  }
+
+  @Override
+  public List<DirectoryDTO> create(List<DirectoryDTO> dtos) {
+    dtos.forEach(directoryDTO -> {
+      if(directoryDTO.getParentId() != null && !directoryRepository.existsById(directoryDTO.getParentId())) {
+        throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, directoryDTO.getParentId());
+      }
+    });
+    List<Directory> collect = dtos.stream().map(directoryDTO -> {
+      Optional<Directory> parentTmp = directoryRepository.findById(directoryDTO.getParentId());
+      if(parentTmp.isEmpty()) {
+        throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, directoryDTO.getParentId());
+      }
+      Directory directory = new Directory();
+      directory.setParent(parentTmp.get());
+      directory.setCreated(LocalDateTime.now());
+      directory.setModified(LocalDateTime.now());
+      directory.setName(directoryDTO.getName());
+      return directory;
+    }).collect(Collectors.toList());
+    return collect.stream().map(mapper::toDto).collect(Collectors.toList());
+  }
+
+  @Override
+  public DirectoryDTO findOrCreatePath(DirectoryPathDTO path) {
+    List<String> dirs = new ArrayList<>(Arrays.asList(path.getPath().split("/")));
+    List<String> split = new ArrayList<>();
+    dirs.forEach(tmp -> split.addAll(Arrays.asList(tmp.split("\\\\"))));
+    Directory lastDir;
+    Optional<Directory> root = directoryRepository.findByNameAndParentId(split.get(0), null).stream().findFirst();
+    if(root.isEmpty()) {
+      lastDir = createPath(split, null);
+    } else {
+      Directory parent = root.get();
+      lastDir = parent;
+      for(int i = 1; i < split.size(); i++) {
+        Optional<Directory> current = directoryRepository.findByNameAndParentId(split.get(i), parent.getId()).stream().findFirst();
+        if(current.isEmpty()) {
+          lastDir = createPath(split, parent.getId());
+          break;
+        } else {
+          lastDir = current.get();
+          parent = lastDir;
+        }
+      }
+    }
+    return mapper.toDto(lastDir);
+  }
+
+  private Directory createPath(List<String> path, Long parentId) {
+    Directory last = mapper.fromId(parentId);
+    for(String s : path) {
+      Directory dir = new Directory();
+      dir.setParent(last);
+      dir.setName(s);
+      dir.setCreated(LocalDateTime.now());
+      dir.setModified(LocalDateTime.now());
+      last = directoryRepository.save(dir);
+    }
+    return last;
   }
 }
 

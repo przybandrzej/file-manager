@@ -12,6 +12,7 @@ import tech.przybysz.pms.filemanager.service.DownloadService;
 import tech.przybysz.pms.filemanager.service.FileResource;
 import tech.przybysz.pms.filemanager.service.ResourceFileService;
 import tech.przybysz.pms.filemanager.service.dto.DirectoryDTO;
+import tech.przybysz.pms.filemanager.service.dto.DirectoryPathDTO;
 import tech.przybysz.pms.filemanager.service.dto.IDsDTO;
 import tech.przybysz.pms.filemanager.service.dto.ResourceFileDTO;
 import tech.przybysz.pms.filemanager.web.rest.util.HeaderUtil;
@@ -138,5 +139,25 @@ public class DirectoryResource {
             resource.getFileName()))
         .contentLength(resource.getResource().contentLength())
         .body(resource.getResource());
+  }
+
+  @PostMapping("/_bulk")
+  public ResponseEntity<List<DirectoryDTO>> createDirectories(@RequestBody List<DirectoryDTO> dirs) {
+    log.debug("REST request to create Directories {}", dirs);
+    List<DirectoryDTO> save = directoryService.create(dirs);
+    return ResponseEntity.ok()
+        .headers(HeaderUtil.createBulkEntityCreationAlert(applicationName, true, ENTITY_NAME,
+            save.stream().map(it -> it.getId().toString()).collect(Collectors.toList())))
+        .body(save);
+  }
+
+  @PostMapping("/by-path")
+  public ResponseEntity<DirectoryDTO> findDirectoryByPathOrCreate(@RequestBody DirectoryPathDTO path) {
+    log.debug("REST request to find Directory by path {}", path);
+    DirectoryDTO dir = directoryService.findOrCreatePath(path);
+    return ResponseEntity.ok()
+        .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+            dir.getId().toString()))
+        .body(dir);
   }
 }

@@ -1,5 +1,7 @@
 package tech.przybysz.pms.filemanager.domain;
 
+import tech.przybysz.pms.filemanager.domain.enumeration.FileSizeUnit;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -22,6 +24,13 @@ public class ResourceFile implements Serializable {
 
   @Column(name = "extension")
   private String extension;
+
+  @Column(name = "size")
+  private Long size;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "size_unit")
+  private FileSizeUnit sizeUnit;
 
   @Column(name = "created")
   private LocalDateTime created;
@@ -98,6 +107,22 @@ public class ResourceFile implements Serializable {
 
   public void setBackedUp(Boolean backedUp) {
     this.backedUp = backedUp;
+  }
+
+  public Long getSize() {
+    return size;
+  }
+
+  public void setSize(Long size) {
+    this.size = size;
+  }
+
+  public FileSizeUnit getSizeUnit() {
+    return sizeUnit;
+  }
+
+  public void setSizeUnit(FileSizeUnit sizeUnit) {
+    this.sizeUnit = sizeUnit;
   }
 
   @Override

@@ -25,7 +25,9 @@ CREATE TABLE resource_file
     modified            timestamp without time zone,
     original_name       character varying(255),
     backed_up           boolean,
-    parent_directory_id bigint
+    parent_directory_id bigint,
+    size                bigint,
+    size_unit           character varying(255)
 );
 
 CREATE SEQUENCE resource_file_id_seq

@@ -1,5 +1,7 @@
 package tech.przybysz.pms.filemanager.service.dto;
 
+import tech.przybysz.pms.filemanager.domain.enumeration.FileSizeUnit;
+
 import java.time.LocalDateTime;
 
 public class ResourceFileDTO {
@@ -12,6 +14,8 @@ public class ResourceFileDTO {
   private LocalDateTime created;
   private LocalDateTime modified;
   private Boolean backedUp;
+  private Long size;
+  private FileSizeUnit sizeUnit;
 
   public Long getId() {
     return id;
@@ -77,6 +81,22 @@ public class ResourceFileDTO {
     this.backedUp = backedUp;
   }
 
+  public Long getSize() {
+    return size;
+  }
+
+  public void setSize(Long size) {
+    this.size = size;
+  }
+
+  public FileSizeUnit getSizeUnit() {
+    return sizeUnit;
+  }
+
+  public void setSizeUnit(FileSizeUnit sizeUnit) {
+    this.sizeUnit = sizeUnit;
+  }
+
   @Override
   public boolean equals(Object o) {
     if(this == o) {
@@ -104,6 +124,8 @@ public class ResourceFileDTO {
         ", created=" + created +
         ", modified=" + modified +
         ", backedUp=" + backedUp +
+        ", size=" + size +
+        ", sizeUnit=" + sizeUnit +
         '}';
   }
 }

@@ -8,12 +8,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tech.przybysz.pms.filemanager.service.DownloadService;
-import tech.przybysz.pms.filemanager.service.FileResource;
-import tech.przybysz.pms.filemanager.service.ResourceFileService;
-import tech.przybysz.pms.filemanager.service.UploadService;
+import tech.przybysz.pms.filemanager.service.*;
 import tech.przybysz.pms.filemanager.service.dto.IDsDTO;
 import tech.przybysz.pms.filemanager.service.dto.ResourceFileDTO;
+import tech.przybysz.pms.filemanager.service.dto.ResourceFileLinkDTO;
 import tech.przybysz.pms.filemanager.web.rest.util.HeaderUtil;
 import tech.przybysz.pms.filemanager.web.rest.util.ResponseUtil;
 
@@ -32,11 +30,14 @@ public class ResourceFileResource {
   private final ResourceFileService fileService;
   private final UploadService uploadService;
   private final DownloadService downloadService;
+  private final ResourceFileLinkService linkService;
 
-  public ResourceFileResource(ResourceFileService fileService, UploadService uploadService, DownloadService downloadService) {
+  public ResourceFileResource(ResourceFileService fileService, UploadService uploadService,
+                              DownloadService downloadService, ResourceFileLinkService linkService) {
     this.fileService = fileService;
     this.uploadService = uploadService;
     this.downloadService = downloadService;
+    this.linkService = linkService;
   }
 
   @GetMapping
@@ -137,4 +138,9 @@ public class ResourceFileResource {
         .body(resource.getResource());
   }
 
+  @GetMapping("/{id}/links")
+  public List<ResourceFileLinkDTO> getFileLinks(@PathVariable Long id) {
+    log.debug("REST request to get all ResourceFileLinks of ResourceFile {}", id);
+    return linkService.findAllOfFile(id);
+  }
 }

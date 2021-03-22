@@ -103,9 +103,7 @@ public class ResourceFileServiceImpl implements ResourceFileService {
       return;
     }
     deleteService.deleteFile(resourceFile.get());
-    Collection<ResourceFileLink> links = linkRepository.findAllByChildFileId(id);
-    links.addAll(linkRepository.findAllByParentFileId(id));
-    linkRepository.deleteAll(links);
+    linkRepository.deleteAll(linkRepository.findAllByParentFileIdOrChildFileId(id, id));
     fileRepository.deleteById(id);
   }
 
@@ -153,11 +151,9 @@ public class ResourceFileServiceImpl implements ResourceFileService {
       return;
     }
     deleteService.deleteFiles(resourceFile);
-    List<ResourceFileLink> collect = ids.getIds().stream().map(id -> {
-      Collection<ResourceFileLink> links = linkRepository.findAllByChildFileId(id);
-      links.addAll(linkRepository.findAllByParentFileId(id));
-      return links;
-    }).flatMap(Collection::stream).collect(Collectors.toList());
+    List<ResourceFileLink> collect = ids.getIds().stream()
+        .map(id -> linkRepository.findAllByParentFileIdOrChildFileId(id, id))
+        .flatMap(Collection::stream).collect(Collectors.toList());
     linkRepository.deleteAll(collect);
     fileRepository.deleteAll(resourceFile);
   }

@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tech.przybysz.pms.filemanager.domain.Directory;
 import tech.przybysz.pms.filemanager.domain.ResourceFile;
 import tech.przybysz.pms.filemanager.repository.DirectoryRepository;
+import tech.przybysz.pms.filemanager.repository.ResourceFileLinkRepository;
 import tech.przybysz.pms.filemanager.repository.ResourceFileRepository;
 import tech.przybysz.pms.filemanager.service.DeleteService;
 import tech.przybysz.pms.filemanager.service.DirectoryService;
@@ -32,13 +33,16 @@ public class DirectoryServiceImpl implements DirectoryService {
   private final DirectoryMapper mapper;
   private final ResourceFileRepository fileRepository;
   private final DeleteService deleteService;
+  private final ResourceFileLinkRepository linkRepository;
 
   public DirectoryServiceImpl(DirectoryRepository directoryRepository, DirectoryMapper mapper,
-                              ResourceFileRepository fileRepository, DeleteService deleteService) {
+                              ResourceFileRepository fileRepository, DeleteService deleteService,
+                              ResourceFileLinkRepository linkRepository) {
     this.directoryRepository = directoryRepository;
     this.mapper = mapper;
     this.fileRepository = fileRepository;
     this.deleteService = deleteService;
+    this.linkRepository = linkRepository;
   }
 
   @Override
@@ -131,6 +135,9 @@ public class DirectoryServiceImpl implements DirectoryService {
     Directory directory = tmp.get();
     Set<ResourceFile> files = this.getFiles(directory);
     deleteService.deleteFiles(files);
+    linkRepository.deleteAll(
+        files.stream().map(it -> linkRepository.findAllByParentFileIdOrChildFileId(it.getId(), it.getId()))
+            .flatMap(Collection::stream).collect(Collectors.toList()));
     files.forEach(fileRepository::delete);
     Set<Directory> children = getChildren(directory);
     directoryRepository.deleteAll(children);
@@ -180,6 +187,9 @@ public class DirectoryServiceImpl implements DirectoryService {
     }
     List<ResourceFile> files = directories.stream().map(this::getFiles).flatMap(Set::stream).collect(Collectors.toList());
     deleteService.deleteFiles(files);
+    linkRepository.deleteAll(
+        files.stream().map(it -> linkRepository.findAllByParentFileIdOrChildFileId(it.getId(), it.getId()))
+            .flatMap(Collection::stream).collect(Collectors.toList()));
     files.forEach(fileRepository::delete);
     List<Directory> children = directories.stream().map(this::getChildren).flatMap(Set::stream).collect(Collectors.toList());
     directoryRepository.deleteAll(children);

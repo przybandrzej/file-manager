@@ -140,4 +140,9 @@ public class ResourceFileLinkServiceImpl implements ResourceFileLinkService {
     }).collect(Collectors.toList());
     return repository.saveAll(entities).stream().map(mapper::toDto).collect(Collectors.toList());
   }
+
+  @Override
+  public List<ResourceFileLinkDTO> findAllOfFile(Long fileId) {
+    return repository.findAllByParentFileIdOrChildFileId(fileId, fileId).stream().map(mapper::toDto).collect(Collectors.toList());
+  }
 }

@@ -131,14 +131,17 @@ public class DirectoryServiceImpl implements DirectoryService {
   @Override
   public void delete(Long id) {
     log.debug("Request to delete Directory : {}", id);
-    Optional<Directory> directory = directoryRepository.findById(id);
-    if(directory.isEmpty()) {
+    Optional<Directory> tmp = directoryRepository.findById(id);
+    if(tmp.isEmpty()) {
       return;
     }
-    Set<ResourceFile> files = this.getFiles(directory.get());
+    Directory directory = tmp.get();
+    Set<ResourceFile> files = this.getFiles(directory);
     deleteService.deleteFiles(files);
     files.forEach(fileRepository::delete);
-    directoryRepository.delete(directory.get());
+    Set<Directory> children = getChildren(directory);
+    directoryRepository.deleteAll(children);
+    directoryRepository.delete(directory);
   }
 
   @Override
@@ -185,6 +188,8 @@ public class DirectoryServiceImpl implements DirectoryService {
     List<ResourceFile> files = directories.stream().map(this::getFiles).flatMap(Set::stream).collect(Collectors.toList());
     deleteService.deleteFiles(files);
     files.forEach(fileRepository::delete);
+    List<Directory> children = directories.stream().map(this::getChildren).flatMap(Set::stream).collect(Collectors.toList());
+    directoryRepository.deleteAll(children);
     directoryRepository.deleteAll(directories);
   }
 
@@ -192,6 +197,12 @@ public class DirectoryServiceImpl implements DirectoryService {
     Set<ResourceFile> files = dir.getFiles();
     dir.getChildren().forEach(child -> files.addAll(this.getFiles(child)));
     return files;
+  }
+
+  private Set<Directory> getChildren(Directory dir) {
+    Set<Directory> directories = dir.getChildren();
+    dir.getChildren().forEach(child -> directories.addAll(this.getChildren(child)));
+    return directories;
   }
 
   @Override

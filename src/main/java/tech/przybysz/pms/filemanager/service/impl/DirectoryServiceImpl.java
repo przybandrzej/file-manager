@@ -56,31 +56,24 @@ public class DirectoryServiceImpl implements DirectoryService {
       }
       newParent = newParentTmp.get();
     }
-    Directory oldParent = directory.getParent();
-    checkParentChildren(directoryDTO.getName(), newParent, oldParent, false);
-
+    checkParentChildren(directoryDTO.getId(), directoryDTO.getName(), newParent);
     directory.setParent(newParent);
     directory.setModified(LocalDateTime.now());
     directory.setName(directoryDTO.getName());
     return mapper.toDto(directoryRepository.save(directory));
   }
 
-  private void checkParentChildren(String dirName, Directory newParent, Directory oldParent, boolean eager) {
+  private void checkParentChildren(Long dirId, String dirName, Directory newParent) {
     Long newParentId = null;
     if(newParent != null) {
       newParentId = newParent.getId();
     }
-    Long oldParentId = null;
-    if(oldParent != null) {
-      oldParentId = oldParent.getId();
-    }
-    if((oldParentId != null && newParentId != null && !newParentId.equals(oldParentId))
-        || (oldParentId == null && newParentId != null) || (oldParentId != null && newParentId == null)
-        || eager) {
-      Collection<Directory> parentChildren = directoryRepository.findByNameAndParentId(dirName, newParentId);
-      if(!parentChildren.isEmpty()) {
-        throw new DirectoryNameTakenException(newParentId, dirName);
+    Collection<Directory> parentChildren = directoryRepository.findByNameAndParentId(dirName, newParentId);
+    if(!parentChildren.isEmpty()) {
+      if(parentChildren.stream().anyMatch(it -> it.getId().equals(dirId))) {
+        return;
       }
+      throw new DirectoryNameTakenException(newParentId, dirName);
     }
   }
 
@@ -94,7 +87,7 @@ public class DirectoryServiceImpl implements DirectoryService {
       }
       newParent = newParentTmp.get();
     }
-    checkParentChildren(directoryDTO.getName(), newParent, null, false);
+    checkParentChildren(null, directoryDTO.getName(), newParent);
     Directory directory = new Directory();
     directory.setParent(newParent);
     directory.setCreated(LocalDateTime.now());
@@ -151,7 +144,7 @@ public class DirectoryServiceImpl implements DirectoryService {
       throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, id);
     }
     Directory directory = tmp.get();
-    checkParentChildren(name, directory.getParent(), directory.getParent(), true);
+    checkParentChildren(directory.getId(), name, directory.getParent());
     directory.setModified(LocalDateTime.now());
     directory.setName(name);
     return mapper.toDto(directoryRepository.save(directory));
@@ -172,7 +165,7 @@ public class DirectoryServiceImpl implements DirectoryService {
       parent = parentTmp.get();
     }
     Directory directory = tmp.get();
-    checkParentChildren(directory.getName(), parent, directory.getParent(), false);
+    checkParentChildren(directory.getId(), directory.getName(), parent);
     directory.setParent(parent);
     directory.setModified(LocalDateTime.now());
     return mapper.toDto(directoryRepository.save(directory));
@@ -223,7 +216,7 @@ public class DirectoryServiceImpl implements DirectoryService {
     }
     Directory finalParent = parent;
     tmp.forEach(dir -> {
-      checkParentChildren(dir.getName(), finalParent, dir.getParent(), false);
+      checkParentChildren(dir.getId(), dir.getName(), finalParent);
       dir.setModified(LocalDateTime.now());
       dir.setParent(finalParent);
     });
@@ -243,7 +236,7 @@ public class DirectoryServiceImpl implements DirectoryService {
         throw new EntityNotFoundException(DirectoryServiceImpl.ENTITY_NAME, directoryDTO.getParentId());
       }
       Directory parent = parentTmp.get();
-      checkParentChildren(directoryDTO.getName(), parent, null, false);
+      checkParentChildren(null, directoryDTO.getName(), parent);
       Directory directory = new Directory();
       directory.setParent(parent);
       directory.setCreated(LocalDateTime.now());

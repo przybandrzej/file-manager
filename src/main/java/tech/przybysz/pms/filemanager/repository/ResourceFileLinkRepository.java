@@ -12,4 +12,6 @@ public interface ResourceFileLinkRepository extends JpaRepository<ResourceFileLi
   Collection<ResourceFileLink> findAllByParentFileId(Long parentId);
 
   Collection<ResourceFileLink> findAllByChildFileId(Long childId);
+
+  Collection<ResourceFileLink> findAllByParentFileIdOrChildFileId(Long parentId, Long childId);
 }

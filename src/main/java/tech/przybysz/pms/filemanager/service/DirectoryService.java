@@ -1,6 +1,7 @@
 package tech.przybysz.pms.filemanager.service;
 
 import tech.przybysz.pms.filemanager.service.dto.DirectoryDTO;
+import tech.przybysz.pms.filemanager.service.dto.DirectoryPathDTO;
 import tech.przybysz.pms.filemanager.service.dto.IDsDTO;
 
 import java.util.List;
@@ -9,6 +10,8 @@ import java.util.Optional;
 public interface DirectoryService {
 
   DirectoryDTO create(DirectoryDTO directoryDTO);
+
+  List<DirectoryDTO> create(List<DirectoryDTO> dtos);
 
   DirectoryDTO update(DirectoryDTO directoryDTO);
 
@@ -27,4 +30,6 @@ public interface DirectoryService {
   void delete(IDsDTO ids);
 
   List<DirectoryDTO> updateParentDirectory(IDsDTO ids, Long parentDirectoryId);
+
+  DirectoryDTO findOrCreatePath(DirectoryPathDTO path);
 }

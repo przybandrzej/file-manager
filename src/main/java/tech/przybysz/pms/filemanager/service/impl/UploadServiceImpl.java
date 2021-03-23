@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import tech.przybysz.pms.filemanager.domain.enumeration.FileSizeUnit;
 import tech.przybysz.pms.filemanager.service.io.BackupService;
 import tech.przybysz.pms.filemanager.service.ResourceFileService;
 import tech.przybysz.pms.filemanager.service.UploadService;
@@ -36,7 +37,7 @@ public class UploadServiceImpl implements UploadService {
   public List<ResourceFileDTO> save(Long directoryId, List<MultipartFile> files) {
     log.debug("Request to save {} files to Directory {}", files.size(), directoryId);
     List<ResourceFileDTO> resources = files.stream()
-        .map(file -> this.createResourceDto(directoryId, file.getOriginalFilename()))
+        .map(file -> this.createResourceDto(directoryId, file.getOriginalFilename(), file.getSize()))
         .map(fileService::create)
         .collect(Collectors.toList());
     for(int i = 0; i < files.size(); i++) {
@@ -52,7 +53,7 @@ public class UploadServiceImpl implements UploadService {
     return resources;
   }
 
-  private ResourceFileDTO createResourceDto(Long directoryId, String originalName) {
+  private ResourceFileDTO createResourceDto(Long directoryId, String originalName, long byteSize) {
     if(originalName == null) {
       originalName = "file";
     }
@@ -63,6 +64,8 @@ public class UploadServiceImpl implements UploadService {
     dto.setParentDirectoryId(directoryId);
     dto.setOriginalName(name);
     dto.setExtension(extension);
+    dto.setSize(byteSize);
+    dto.setSizeUnit(FileSizeUnit.BYTE);
     return dto;
   }
 

@@ -12,6 +12,7 @@ import tech.przybysz.pms.filemanager.service.DownloadService;
 import tech.przybysz.pms.filemanager.service.FileResource;
 import tech.przybysz.pms.filemanager.service.ResourceFileService;
 import tech.przybysz.pms.filemanager.service.dto.DirectoryDTO;
+import tech.przybysz.pms.filemanager.service.dto.DirectoryPathDTO;
 import tech.przybysz.pms.filemanager.service.dto.IDsDTO;
 import tech.przybysz.pms.filemanager.service.dto.ResourceFileDTO;
 import tech.przybysz.pms.filemanager.web.rest.util.HeaderUtil;
@@ -101,7 +102,7 @@ public class DirectoryResource {
   }
 
   @PatchMapping("{id}/change-directory/{directoryId}")
-  public ResponseEntity<DirectoryDTO> updateParentDirectory(@PathVariable Long id, @PathVariable Long directoryId) {
+  public ResponseEntity<DirectoryDTO> updateDirectoryParentDirectory(@PathVariable Long id, @PathVariable Long directoryId) {
     log.debug("REST request to change DirectoryDTO {} directory to {}", id, directoryId);
     DirectoryDTO save = directoryService.updateParentDirectory(id, directoryId);
     return ResponseEntity.ok()
@@ -120,7 +121,7 @@ public class DirectoryResource {
   }
 
   @PatchMapping("/change-directory/{directoryId}")
-  public ResponseEntity<List<DirectoryDTO>> updateParentDirectoryBulk(@RequestBody IDsDTO ids, @PathVariable Long directoryId) {
+  public ResponseEntity<List<DirectoryDTO>> updateDirectoryParentDirectoryBulk(@RequestBody IDsDTO ids, @PathVariable Long directoryId) {
     log.debug("REST request to change Directories {} directory to {}", ids, directoryId);
     List<DirectoryDTO> save = directoryService.updateParentDirectory(ids, directoryId);
     return ResponseEntity.ok()
@@ -130,7 +131,7 @@ public class DirectoryResource {
   }
 
   @GetMapping(value = "/{id}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-  public ResponseEntity<Resource> download(@PathVariable Long id) {
+  public ResponseEntity<Resource> downloadDirectory(@PathVariable Long id) {
     log.debug("REST request to download Directory {}", id);
     FileResource resource = downloadService.getDirectory(id);
     return ResponseEntity.ok()
@@ -138,5 +139,25 @@ public class DirectoryResource {
             resource.getFileName()))
         .contentLength(resource.getResource().contentLength())
         .body(resource.getResource());
+  }
+
+  @PostMapping("/_bulk")
+  public ResponseEntity<List<DirectoryDTO>> createDirectories(@RequestBody List<DirectoryDTO> dirs) {
+    log.debug("REST request to create Directories {}", dirs);
+    List<DirectoryDTO> save = directoryService.create(dirs);
+    return ResponseEntity.ok()
+        .headers(HeaderUtil.createBulkEntityCreationAlert(applicationName, true, ENTITY_NAME,
+            save.stream().map(it -> it.getId().toString()).collect(Collectors.toList())))
+        .body(save);
+  }
+
+  @PostMapping("/by-path")
+  public ResponseEntity<DirectoryDTO> findDirectoryByPathOrCreate(@RequestBody DirectoryPathDTO path) {
+    log.debug("REST request to find Directory by path {}", path);
+    DirectoryDTO dir = directoryService.findOrCreatePath(path);
+    return ResponseEntity.ok()
+        .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+            dir.getId().toString()))
+        .body(dir);
   }
 }

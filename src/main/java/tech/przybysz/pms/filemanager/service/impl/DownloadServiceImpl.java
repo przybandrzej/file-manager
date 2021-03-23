@@ -9,6 +9,7 @@ import tech.przybysz.pms.filemanager.service.DownloadService;
 import tech.przybysz.pms.filemanager.service.FileResource;
 import tech.przybysz.pms.filemanager.service.ResourceFileService;
 import tech.przybysz.pms.filemanager.service.dto.DirectoryDTO;
+import tech.przybysz.pms.filemanager.service.dto.DownloadDTO;
 import tech.przybysz.pms.filemanager.service.dto.ResourceFileDTO;
 import tech.przybysz.pms.filemanager.service.io.StorageService;
 import tech.przybysz.pms.filemanager.service.io.impl.StorageException;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -39,7 +41,7 @@ public class DownloadServiceImpl implements DownloadService {
   }
 
   @Override
-  public FileResource get(Long fileId) {
+  public FileResource getFile(Long fileId) {
     ResourceFileDTO fileDTO = fileService.findOne(fileId).orElseThrow(() -> new EntityNotFoundException("resourceFile", fileId));
     String fileName = fileDTO.getGeneratedName() + "." + fileDTO.getExtension();
     String originalName = fileDTO.getOriginalName() + "." + fileDTO.getExtension();
@@ -58,6 +60,31 @@ public class DownloadServiceImpl implements DownloadService {
       String parentDirectories = "";
       DirectoryDTO directoryDTO = directoryService.findOne(directoryId).orElseThrow(() -> new EntityNotFoundException("directory", directoryId));
       processDirectory(directoryDTO, parentDirectories, out);
+      return new FileResource(new ByteArrayResource(bos.toByteArray()), System.currentTimeMillis() + ".zip");
+    } catch(IOException e) {
+      throw new StorageException("Could not read file from storage.");
+    }
+  }
+
+  @Override
+  public FileResource get(DownloadDTO downloadDTO) {
+    List<Long> directoriesId = downloadDTO.getDirectories();
+    List<Long> filesId = downloadDTO.getFiles();
+    try(ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ZipOutputStream out = new ZipOutputStream(bos)) {
+      String parentDirectories = "";
+      List<DirectoryDTO> directories = directoriesId.stream().map(id -> directoryService.findOne(id)
+          .orElseThrow(() -> new EntityNotFoundException("directory", id))).collect(Collectors.toList());
+      List<ResourceFileDTO> files = filesId.stream().map(id -> fileService.findOne(id)
+          .orElseThrow(() -> new EntityNotFoundException("resourceFile", id))).collect(Collectors.toList());
+      for(DirectoryDTO directoryDTO : directories) {
+        processDirectory(directoryDTO, parentDirectories, out);
+      }
+      for(ResourceFileDTO fileDTO : files) {
+        String generatedName = fileDTO.getGeneratedName() + "." + fileDTO.getExtension();
+        String originalName = parentDirectories + fileDTO.getOriginalName() + "." + fileDTO.getExtension();
+        addFileToZip(generatedName, originalName, out);
+      }
       return new FileResource(new ByteArrayResource(bos.toByteArray()), System.currentTimeMillis() + ".zip");
     } catch(IOException e) {
       throw new StorageException("Could not read file from storage.");

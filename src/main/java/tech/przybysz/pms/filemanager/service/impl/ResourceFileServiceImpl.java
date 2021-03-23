@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.przybysz.pms.filemanager.domain.Directory;
 import tech.przybysz.pms.filemanager.domain.ResourceFile;
+import tech.przybysz.pms.filemanager.domain.ResourceFileLink;
 import tech.przybysz.pms.filemanager.repository.DirectoryRepository;
+import tech.przybysz.pms.filemanager.repository.ResourceFileLinkRepository;
 import tech.przybysz.pms.filemanager.repository.ResourceFileRepository;
 import tech.przybysz.pms.filemanager.service.DeleteService;
 import tech.przybysz.pms.filemanager.service.ResourceFileService;
@@ -34,13 +36,16 @@ public class ResourceFileServiceImpl implements ResourceFileService {
   private final ResourceFileMapper mapper;
   private final DeleteService deleteService;
   private final DirectoryRepository directoryRepository;
+  private final ResourceFileLinkRepository linkRepository;
 
   public ResourceFileServiceImpl(ResourceFileRepository repository, ResourceFileMapper mapper,
-                                 DeleteService deleteService, DirectoryRepository directoryRepository) {
+                                 DeleteService deleteService, DirectoryRepository directoryRepository,
+                                 ResourceFileLinkRepository linkRepository) {
     this.fileRepository = repository;
     this.mapper = mapper;
     this.deleteService = deleteService;
     this.directoryRepository = directoryRepository;
+    this.linkRepository = linkRepository;
   }
 
   @Override
@@ -98,6 +103,7 @@ public class ResourceFileServiceImpl implements ResourceFileService {
       return;
     }
     deleteService.deleteFile(resourceFile.get());
+    linkRepository.deleteAll(linkRepository.findAllByParentFileIdOrChildFileId(id, id));
     fileRepository.deleteById(id);
   }
 
@@ -145,6 +151,10 @@ public class ResourceFileServiceImpl implements ResourceFileService {
       return;
     }
     deleteService.deleteFiles(resourceFile);
+    List<ResourceFileLink> collect = ids.getIds().stream()
+        .map(id -> linkRepository.findAllByParentFileIdOrChildFileId(id, id))
+        .flatMap(Collection::stream).collect(Collectors.toList());
+    linkRepository.deleteAll(collect);
     fileRepository.deleteAll(resourceFile);
   }
 
@@ -165,5 +175,11 @@ public class ResourceFileServiceImpl implements ResourceFileService {
       file.setParentDirectory(directory.get());
     });
     return fileRepository.saveAll(tmp).stream().map(mapper::toDto).collect(Collectors.toList());
+  }
+
+  @Override
+  public List<ResourceFileDTO> findAllOfTag(Long tagId) {
+    log.debug("Request to get ResourceFiles of Tag : {}", tagId);
+    return fileRepository.findAllByTagsId(tagId).stream().map(mapper::toDto).collect(Collectors.toList());
   }
 }

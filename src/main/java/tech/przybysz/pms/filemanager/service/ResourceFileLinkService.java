@@ -27,4 +27,6 @@ public interface ResourceFileLinkService {
   void delete(IDsDTO ids);
 
   List<ResourceFileLinkDTO> create(List<ResourceFileLinkDTO> links);
+
+  List<ResourceFileLinkDTO> findAllOfFile(Long fileId);
 }

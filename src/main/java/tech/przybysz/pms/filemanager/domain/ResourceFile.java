@@ -1,8 +1,12 @@
 package tech.przybysz.pms.filemanager.domain;
 
+import tech.przybysz.pms.filemanager.domain.enumeration.FileSizeUnit;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "resource_file")
@@ -23,6 +27,13 @@ public class ResourceFile implements Serializable {
   @Column(name = "extension")
   private String extension;
 
+  @Column(name = "size")
+  private Long size;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "size_unit")
+  private FileSizeUnit sizeUnit;
+
   @Column(name = "created")
   private LocalDateTime created;
 
@@ -35,6 +46,12 @@ public class ResourceFile implements Serializable {
   @ManyToOne
   @JoinColumn(name = "parent_directory_id", referencedColumnName = "id", nullable = false)
   private Directory parentDirectory;
+
+  @ManyToMany
+  @JoinTable(name = "resource_file_tag",
+      joinColumns = @JoinColumn(name = "resource_file_id"),
+      inverseJoinColumns = @JoinColumn(name = "tag_id"))
+  private Set<Tag> tags = new HashSet<>();
 
   public Long getId() {
     return id;
@@ -98,6 +115,30 @@ public class ResourceFile implements Serializable {
 
   public void setBackedUp(Boolean backedUp) {
     this.backedUp = backedUp;
+  }
+
+  public Long getSize() {
+    return size;
+  }
+
+  public void setSize(Long size) {
+    this.size = size;
+  }
+
+  public FileSizeUnit getSizeUnit() {
+    return sizeUnit;
+  }
+
+  public void setSizeUnit(FileSizeUnit sizeUnit) {
+    this.sizeUnit = sizeUnit;
+  }
+
+  public Set<Tag> getTags() {
+    return tags;
+  }
+
+  public void setTags(Set<Tag> tags) {
+    this.tags = tags;
   }
 
   @Override

@@ -17,6 +17,8 @@ public interface DirectoryMapper extends EntityMapper<DirectoryDTO, Directory> {
   @Mapping(source = "parentId", target = "parent")
   @Mapping(target = "children", ignore = true)
   @Mapping(target = "files", ignore = true)
+  @Mapping(target = "removeFile", ignore = true)
+  @Mapping(target = "removeChild", ignore = true)
   Directory toEntity(DirectoryDTO directoryDTO);
 
   default Directory fromId(Long id) {

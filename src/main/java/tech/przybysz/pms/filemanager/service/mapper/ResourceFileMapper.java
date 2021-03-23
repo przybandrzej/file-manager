@@ -10,13 +10,14 @@ import tech.przybysz.pms.filemanager.service.dto.ResourceFileDTO;
 /**
  * Mapper for the entity {@link Directory} and its DTO {@link DirectoryDTO}.
  */
-@Mapper(componentModel = "spring", uses = {DirectoryMapper.class})
+@Mapper(componentModel = "spring", uses = {DirectoryMapper.class, TagMapper.class})
 public interface ResourceFileMapper extends EntityMapper<ResourceFileDTO, ResourceFile> {
 
   @Mapping(source = "parentDirectory.id", target = "parentDirectoryId")
   ResourceFileDTO toDto(ResourceFile directory);
 
   @Mapping(source = "parentDirectoryId", target = "parentDirectory")
+  @Mapping(target = "tags", ignore = true)
   ResourceFile toEntity(ResourceFileDTO directoryDTO);
 
   default ResourceFile fromId(Long id) {

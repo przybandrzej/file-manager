@@ -17,6 +17,7 @@ public interface ResourceFileMapper extends EntityMapper<ResourceFileDTO, Resour
   ResourceFileDTO toDto(ResourceFile directory);
 
   @Mapping(source = "parentDirectoryId", target = "parentDirectory")
+  @Mapping(target = "tags", ignore = true)
   ResourceFile toEntity(ResourceFileDTO directoryDTO);
 
   default ResourceFile fromId(Long id) {

@@ -102,7 +102,7 @@ public class DirectoryResource {
   }
 
   @PatchMapping("{id}/change-directory/{directoryId}")
-  public ResponseEntity<DirectoryDTO> updateParentDirectory(@PathVariable Long id, @PathVariable Long directoryId) {
+  public ResponseEntity<DirectoryDTO> updateDirectoryParentDirectory(@PathVariable Long id, @PathVariable Long directoryId) {
     log.debug("REST request to change DirectoryDTO {} directory to {}", id, directoryId);
     DirectoryDTO save = directoryService.updateParentDirectory(id, directoryId);
     return ResponseEntity.ok()
@@ -121,7 +121,7 @@ public class DirectoryResource {
   }
 
   @PatchMapping("/change-directory/{directoryId}")
-  public ResponseEntity<List<DirectoryDTO>> updateParentDirectoryBulk(@RequestBody IDsDTO ids, @PathVariable Long directoryId) {
+  public ResponseEntity<List<DirectoryDTO>> updateDirectoryParentDirectoryBulk(@RequestBody IDsDTO ids, @PathVariable Long directoryId) {
     log.debug("REST request to change Directories {} directory to {}", ids, directoryId);
     List<DirectoryDTO> save = directoryService.updateParentDirectory(ids, directoryId);
     return ResponseEntity.ok()
@@ -131,7 +131,7 @@ public class DirectoryResource {
   }
 
   @GetMapping(value = "/{id}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-  public ResponseEntity<Resource> download(@PathVariable Long id) {
+  public ResponseEntity<Resource> downloadDirectory(@PathVariable Long id) {
     log.debug("REST request to download Directory {}", id);
     FileResource resource = downloadService.getDirectory(id);
     return ResponseEntity.ok()

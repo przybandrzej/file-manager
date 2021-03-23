@@ -103,7 +103,7 @@ public class ResourceFileResource {
   }
 
   @PatchMapping("{id}/change-directory/{directoryId}")
-  public ResponseEntity<ResourceFileDTO> updateParentDirectory(@PathVariable Long id, @PathVariable Long directoryId) {
+  public ResponseEntity<ResourceFileDTO> updateFileParentDirectory(@PathVariable Long id, @PathVariable Long directoryId) {
     log.debug("REST request to change ResourceFile {} directory to {}", id, directoryId);
     ResourceFileDTO save = fileService.updateParentDirectory(id, directoryId);
     return ResponseEntity.ok()
@@ -122,7 +122,7 @@ public class ResourceFileResource {
   }
 
   @PatchMapping("/change-directory/{directoryId}")
-  public ResponseEntity<List<ResourceFileDTO>> updateParentDirectoryBulk(@RequestBody IDsDTO ids, @PathVariable Long directoryId) {
+  public ResponseEntity<List<ResourceFileDTO>> updateFileParentDirectoryBulk(@RequestBody IDsDTO ids, @PathVariable Long directoryId) {
     log.debug("REST request to change ResourceFiles {} directory to {}", ids, directoryId);
     List<ResourceFileDTO> save = fileService.updateParentDirectory(ids, directoryId);
     return ResponseEntity.ok()
@@ -132,9 +132,9 @@ public class ResourceFileResource {
   }
 
   @GetMapping(value = "/{id}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-  public ResponseEntity<Resource> download(@PathVariable Long id) {
+  public ResponseEntity<Resource> downloadFile(@PathVariable Long id) {
     log.debug("REST request to download ResourceFile {}", id);
-    FileResource resource = downloadService.get(id);
+    FileResource resource = downloadService.getFile(id);
     return ResponseEntity.ok()
         .headers(HeaderUtil.createDownloadFileAlert(applicationName, true,
             resource.getFileName()))

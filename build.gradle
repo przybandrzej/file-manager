@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'tech.przybysz.pms'
-version = '0.5.0'
+version = '0.6.0'
 sourceCompatibility = '11'
 
 configurations {

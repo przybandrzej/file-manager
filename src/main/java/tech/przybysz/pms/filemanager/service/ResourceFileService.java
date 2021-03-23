@@ -27,4 +27,6 @@ public interface ResourceFileService {
   void delete(IDsDTO ids);
 
   List<ResourceFileDTO> updateParentDirectory(IDsDTO ids, Long parentDirectoryId);
+
+  List<ResourceFileDTO> findAllOfTag(Long tagId);
 }

@@ -12,6 +12,7 @@ import tech.przybysz.pms.filemanager.service.*;
 import tech.przybysz.pms.filemanager.service.dto.IDsDTO;
 import tech.przybysz.pms.filemanager.service.dto.ResourceFileDTO;
 import tech.przybysz.pms.filemanager.service.dto.ResourceFileLinkDTO;
+import tech.przybysz.pms.filemanager.service.dto.TagDTO;
 import tech.przybysz.pms.filemanager.web.rest.util.HeaderUtil;
 import tech.przybysz.pms.filemanager.web.rest.util.ResponseUtil;
 
@@ -31,13 +32,16 @@ public class ResourceFileResource {
   private final UploadService uploadService;
   private final DownloadService downloadService;
   private final ResourceFileLinkService linkService;
+  private final TagService tagService;
 
   public ResourceFileResource(ResourceFileService fileService, UploadService uploadService,
-                              DownloadService downloadService, ResourceFileLinkService linkService) {
+                              DownloadService downloadService, ResourceFileLinkService linkService,
+                              TagService tagService) {
     this.fileService = fileService;
     this.uploadService = uploadService;
     this.downloadService = downloadService;
     this.linkService = linkService;
+    this.tagService = tagService;
   }
 
   @GetMapping
@@ -142,5 +146,11 @@ public class ResourceFileResource {
   public List<ResourceFileLinkDTO> getFileLinks(@PathVariable Long id) {
     log.debug("REST request to get all ResourceFileLinks of ResourceFile {}", id);
     return linkService.findAllOfFile(id);
+  }
+
+  @GetMapping("/{id}/tags")
+  public List<TagDTO> getFileTags(@PathVariable Long id) {
+    log.debug("REST request to get all Tags of ResourceFile {}", id);
+    return tagService.findAllOfFile(id);
   }
 }

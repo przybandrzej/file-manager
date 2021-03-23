@@ -5,6 +5,8 @@ import tech.przybysz.pms.filemanager.domain.enumeration.FileSizeUnit;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "resource_file")
@@ -44,6 +46,12 @@ public class ResourceFile implements Serializable {
   @ManyToOne
   @JoinColumn(name = "parent_directory_id", referencedColumnName = "id", nullable = false)
   private Directory parentDirectory;
+
+  @ManyToMany
+  @JoinTable(name = "resource_file_tag",
+      joinColumns = @JoinColumn(name = "resource_file_id"),
+      inverseJoinColumns = @JoinColumn(name = "tag_id"))
+  private Set<Tag> tags = new HashSet<>();
 
   public Long getId() {
     return id;
@@ -123,6 +131,14 @@ public class ResourceFile implements Serializable {
 
   public void setSizeUnit(FileSizeUnit sizeUnit) {
     this.sizeUnit = sizeUnit;
+  }
+
+  public Set<Tag> getTags() {
+    return tags;
+  }
+
+  public void setTags(Set<Tag> tags) {
+    this.tags = tags;
   }
 
   @Override

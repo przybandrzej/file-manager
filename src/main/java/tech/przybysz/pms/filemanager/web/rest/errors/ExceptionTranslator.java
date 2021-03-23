@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import tech.przybysz.pms.filemanager.service.impl.DirectoryNameTakenException;
+import tech.przybysz.pms.filemanager.service.impl.EntityAlreadyExistsException;
 import tech.przybysz.pms.filemanager.service.impl.EntityNotFoundException;
 import tech.przybysz.pms.filemanager.service.io.impl.FileNotFoundException;
 import tech.przybysz.pms.filemanager.service.io.impl.FileReadException;
@@ -73,6 +74,13 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
   protected ResponseEntity<Object> handleDirectoryNameTakenException(DirectoryNameTakenException ex, WebRequest request) {
     Error apiError = new Error(BAD_REQUEST);
     apiError.setMessage("Directory [" + ex.getDirectoryName() + "] already exists inside directory [" + ex.getParentDirectoryId() + "]");
+    return buildResponseEntity(apiError);
+  }
+
+  @ExceptionHandler(EntityAlreadyExistsException.class)
+  protected ResponseEntity<Object> handleEntityAlreadyExistsException(EntityAlreadyExistsException ex, WebRequest request) {
+    Error apiError = new Error(BAD_REQUEST);
+    apiError.setMessage(ex.getEntity() + " [" + ex.getIdentity() + "] already exists");
     return buildResponseEntity(apiError);
   }
 

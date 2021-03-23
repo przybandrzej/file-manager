@@ -10,6 +10,10 @@ import java.util.Collection;
 public interface ResourceFileRepository extends JpaRepository<ResourceFile, Long> {
 
   Collection<ResourceFile> findAllByParentDirectoryId(Long parentDirectoryId);
+
   Collection<ResourceFile> findAllByExtension(String extension);
+
   Collection<ResourceFile> findAllByOriginalNameContainsIgnoreCase(String name);
+
+  Collection<ResourceFile> findAllByTagsId(Long tagId);
 }

@@ -176,4 +176,10 @@ public class ResourceFileServiceImpl implements ResourceFileService {
     });
     return fileRepository.saveAll(tmp).stream().map(mapper::toDto).collect(Collectors.toList());
   }
+
+  @Override
+  public List<ResourceFileDTO> findAllOfTag(Long tagId) {
+    log.debug("Request to get ResourceFiles of Tag : {}", tagId);
+    return fileRepository.findAllByTagsId(tagId).stream().map(mapper::toDto).collect(Collectors.toList());
+  }
 }

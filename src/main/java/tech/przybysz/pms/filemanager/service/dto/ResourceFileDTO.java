@@ -16,6 +16,7 @@ public class ResourceFileDTO {
   private Boolean backedUp;
   private Long size;
   private FileSizeUnit sizeUnit;
+  private Boolean backUp;
 
   public Long getId() {
     return id;
@@ -97,6 +98,14 @@ public class ResourceFileDTO {
     this.sizeUnit = sizeUnit;
   }
 
+  public Boolean getBackUp() {
+    return backUp;
+  }
+
+  public void setBackUp(Boolean backUp) {
+    this.backUp = backUp;
+  }
+
   @Override
   public boolean equals(Object o) {
     if(this == o) {
@@ -126,6 +135,7 @@ public class ResourceFileDTO {
         ", backedUp=" + backedUp +
         ", size=" + size +
         ", sizeUnit=" + sizeUnit +
+        ", backUp=" + backUp +
         '}';
   }
 }

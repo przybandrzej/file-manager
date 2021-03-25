@@ -51,4 +51,3 @@ storage:
     execute: false
     locations: []
     mode: STRICT
-    copies-count: 1

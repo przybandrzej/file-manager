@@ -29,4 +29,6 @@ public interface ResourceFileService {
   List<ResourceFileDTO> updateParentDirectory(IDsDTO ids, Long parentDirectoryId);
 
   List<ResourceFileDTO> findAllOfTag(Long tagId);
+
+  ResourceFileDTO updateBackup(Long id, boolean backUp);
 }

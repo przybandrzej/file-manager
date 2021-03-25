@@ -14,9 +14,16 @@ import tech.przybysz.pms.filemanager.service.DeleteService;
 import tech.przybysz.pms.filemanager.service.ResourceFileService;
 import tech.przybysz.pms.filemanager.service.dto.IDsDTO;
 import tech.przybysz.pms.filemanager.service.dto.ResourceFileDTO;
+import tech.przybysz.pms.filemanager.service.io.BackupService;
+import tech.przybysz.pms.filemanager.service.io.StorageService;
 import tech.przybysz.pms.filemanager.service.mapper.ResourceFileMapper;
+import tech.przybysz.pms.filemanager.service.util.PathUtils;
 import tech.przybysz.pms.filemanager.service.util.RandomUtil;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -37,15 +44,20 @@ public class ResourceFileServiceImpl implements ResourceFileService {
   private final DeleteService deleteService;
   private final DirectoryRepository directoryRepository;
   private final ResourceFileLinkRepository linkRepository;
+  private final BackupService backupService;
+  private final StorageService storageService;
 
   public ResourceFileServiceImpl(ResourceFileRepository repository, ResourceFileMapper mapper,
                                  DeleteService deleteService, DirectoryRepository directoryRepository,
-                                 ResourceFileLinkRepository linkRepository) {
+                                 ResourceFileLinkRepository linkRepository, BackupService backupService,
+                                 StorageService storageService) {
     this.fileRepository = repository;
     this.mapper = mapper;
     this.deleteService = deleteService;
     this.directoryRepository = directoryRepository;
     this.linkRepository = linkRepository;
+    this.backupService = backupService;
+    this.storageService = storageService;
   }
 
   @Override
@@ -181,5 +193,39 @@ public class ResourceFileServiceImpl implements ResourceFileService {
   public List<ResourceFileDTO> findAllOfTag(Long tagId) {
     log.debug("Request to get ResourceFiles of Tag : {}", tagId);
     return fileRepository.findAllByTagsId(tagId).stream().map(mapper::toDto).collect(Collectors.toList());
+  }
+
+  @Override
+  public ResourceFileDTO updateBackup(Long id, boolean backUp) {
+    log.debug("Request to update backup property of ResourceFile : {}", id);
+    Optional<ResourceFile> tmp = fileRepository.findById(id);
+    if(tmp.isEmpty()) {
+      throw new EntityNotFoundException(ENTITY_NAME, id);
+    }
+    ResourceFile resourceFile = tmp.get();
+    ResourceFileDTO resourceFileDTO = mapper.toDto(resourceFile);
+    if(backUp == resourceFile.getBackUp()) {
+        return resourceFileDTO;
+    }
+    if(resourceFile.getBackUp() && resourceFile.getBackedUp()) {
+      // remove backup
+      boolean deleted = backupService.deleteBackup(resourceFileDTO);
+      resourceFile.setBackedUp(!deleted);
+      resourceFile.setBackUp(backUp);
+    } else if(!resourceFile.getBackUp() && !resourceFile.getBackedUp()) {
+      // add backup
+      String fileName = PathUtils.getFileFullGeneratedName(resourceFileDTO);
+      File file = storageService.read(fileName);
+      InputStream inputStream;
+      try {
+        inputStream = new FileInputStream(file);
+      } catch(FileNotFoundException e) {
+        throw new  tech.przybysz.pms.filemanager.service.io.impl.FileNotFoundException("File not found", fileName);
+      }
+      boolean backedUp = backupService.backup(resourceFileDTO, inputStream);
+      resourceFile.setBackedUp(backedUp);
+      resourceFile.setBackUp(backUp);
+    }
+    return mapper.toDto(fileRepository.save(resourceFile));
   }
 }

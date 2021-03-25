@@ -43,6 +43,9 @@ public class ResourceFile implements Serializable {
   @Column(name = "backed_up")
   private Boolean backedUp;
 
+  @Column(name = "back_up")
+  private Boolean backUp;
+
   @ManyToOne
   @JoinColumn(name = "parent_directory_id", referencedColumnName = "id", nullable = false)
   private Directory parentDirectory;
@@ -139,6 +142,14 @@ public class ResourceFile implements Serializable {
 
   public void setTags(Set<Tag> tags) {
     this.tags = tags;
+  }
+
+  public Boolean getBackUp() {
+    return backUp;
+  }
+
+  public void setBackUp(Boolean backUp) {
+    this.backUp = backUp;
   }
 
   @Override

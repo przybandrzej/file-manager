@@ -6,19 +6,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class BackupProperties {
 
   public enum BackupMode {
-    STRICT
+    STRICT, FIRST_OFF, FIST_ON
   }
 
   private Boolean execute = false;
   private String[] locations;
   private BackupMode mode;
-  private Integer copiesCount;
 
-  public BackupProperties(Boolean execute, String[] locations, BackupMode mode, Integer copiesCount) {
+  public BackupProperties(Boolean execute, String[] locations, BackupMode mode) {
     this.execute = execute;
     this.locations = locations;
     this.mode = mode;
-    this.copiesCount = copiesCount;
   }
 
   public BackupProperties() {
@@ -46,13 +44,5 @@ public class BackupProperties {
 
   public void setMode(BackupMode mode) {
     this.mode = mode;
-  }
-
-  public Integer getCopiesCount() {
-    return copiesCount;
-  }
-
-  public void setCopiesCount(Integer copiesCount) {
-    this.copiesCount = copiesCount;
   }
 }

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import tech.przybysz.pms.filemanager.configuration.properties.BackupProperties;
 import tech.przybysz.pms.filemanager.domain.enumeration.FileSizeUnit;
 import tech.przybysz.pms.filemanager.service.io.BackupService;
 import tech.przybysz.pms.filemanager.service.ResourceFileService;
@@ -12,6 +13,7 @@ import tech.przybysz.pms.filemanager.service.UploadService;
 import tech.przybysz.pms.filemanager.service.dto.ResourceFileDTO;
 import tech.przybysz.pms.filemanager.service.io.StorageService;
 import tech.przybysz.pms.filemanager.service.io.impl.FileReadException;
+import tech.przybysz.pms.filemanager.service.util.PathUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -26,11 +28,14 @@ public class UploadServiceImpl implements UploadService {
   private final ResourceFileService fileService;
   private final StorageService storageService;
   private final BackupService backupService;
+  private final BackupProperties.BackupMode backupMode;
 
-  public UploadServiceImpl(ResourceFileService fileService, StorageService storageService, BackupService backupService) {
+  public UploadServiceImpl(ResourceFileService fileService, StorageService storageService, BackupService backupService,
+                           BackupProperties backupProperties) {
     this.fileService = fileService;
     this.storageService = storageService;
     this.backupService = backupService;
+    this.backupMode = backupProperties.getMode();
   }
 
   @Override
@@ -44,8 +49,14 @@ public class UploadServiceImpl implements UploadService {
       MultipartFile file = files.get(i);
       ResourceFileDTO resource = resources.get(i);
       try {
-        storageService.store(resource.getGeneratedName() + "." + resource.getExtension(), file.getInputStream());
-        resource.setBackedUp(backupService.backup(resource, file.getInputStream()));
+        storageService.store(PathUtils.getFileFullGeneratedName(resource), file.getInputStream());
+        if(backupMode != BackupProperties.BackupMode.FIRST_OFF) {
+          resource.setBackUp(true);
+          resource.setBackedUp(backupService.backup(resource, file.getInputStream()));
+        } else {
+          resource.setBackUp(false);
+        }
+        fileService.update(resource);
       } catch(IOException e) {
         throw new FileReadException("Could not read the file.", resource.getOriginalName() + "." + resource.getExtension());
       }

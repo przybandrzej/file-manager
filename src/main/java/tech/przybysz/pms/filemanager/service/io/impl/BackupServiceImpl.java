@@ -1,13 +1,12 @@
 package tech.przybysz.pms.filemanager.service.io.impl;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.przybysz.pms.filemanager.configuration.properties.BackupProperties;
-import tech.przybysz.pms.filemanager.service.io.BackupService;
-import tech.przybysz.pms.filemanager.service.ResourceFileService;
 import tech.przybysz.pms.filemanager.service.dto.ResourceFileDTO;
+import tech.przybysz.pms.filemanager.service.io.BackupService;
 import tech.przybysz.pms.filemanager.service.io.IOService;
+import tech.przybysz.pms.filemanager.service.util.PathUtils;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -27,17 +26,13 @@ public class BackupServiceImpl implements BackupService {
   private final Boolean execute;
   private final String[] locations;
   private final BackupProperties.BackupMode mode;
-  private final Integer count;
 
   private final IOService ioService;
-  private final ResourceFileService resourceFileService;
 
   private List<Path> storages = new ArrayList<>();
 
-  public BackupServiceImpl(IOService ioService, ResourceFileService resourceFileService, BackupProperties backupProperties) {
+  public BackupServiceImpl(IOService ioService, BackupProperties backupProperties) {
     this.ioService = ioService;
-    this.resourceFileService = resourceFileService;
-    this.count = backupProperties.getCopiesCount();
     this.mode = backupProperties.getMode();
     this.locations = backupProperties.getLocations();
     this.execute = backupProperties.getExecute();
@@ -64,22 +59,20 @@ public class BackupServiceImpl implements BackupService {
     if(Boolean.FALSE.equals(execute) || storages.isEmpty()) {
       return false;
     }
-    String name = resourceFileDTO.getGeneratedName() + "." + resourceFileDTO.getExtension();
+    String name = PathUtils.getFileFullGeneratedName(resourceFileDTO);
     boolean backedUp = storages.stream().allMatch(storage -> ioService.save(name, stream, storage));
     resourceFileDTO.setBackedUp(backedUp);
-    resourceFileService.update(resourceFileDTO);
     return backedUp;
   }
 
   @Override
   public boolean deleteBackup(ResourceFileDTO resourceFileDTO) {
-    if(Boolean.FALSE.equals(execute) || storages.isEmpty()) {
+    if(mode == BackupProperties.BackupMode.STRICT || storages.isEmpty()) {
       return false;
     }
-    String name = resourceFileDTO.getGeneratedName() + "." + resourceFileDTO.getExtension();
+    String name = PathUtils.getFileFullGeneratedName(resourceFileDTO);
     storages.forEach(storage -> ioService.remove(name, storage));
     resourceFileDTO.setBackedUp(false);
-    resourceFileService.update(resourceFileDTO);
     return true;
   }
 }

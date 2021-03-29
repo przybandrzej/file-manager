@@ -17,6 +17,7 @@ public class ResourceFileDTO {
   private Long size;
   private FileSizeUnit sizeUnit;
   private Boolean backUp;
+  private Boolean notExists;
 
   public Long getId() {
     return id;
@@ -106,6 +107,14 @@ public class ResourceFileDTO {
     this.backUp = backUp;
   }
 
+  public Boolean getNotExists() {
+    return notExists;
+  }
+
+  public void setNotExists(Boolean notExists) {
+    this.notExists = notExists;
+  }
+
   @Override
   public boolean equals(Object o) {
     if(this == o) {
@@ -136,6 +145,7 @@ public class ResourceFileDTO {
         ", size=" + size +
         ", sizeUnit=" + sizeUnit +
         ", backUp=" + backUp +
+        ", notExists=" + notExists +
         '}';
   }
 }

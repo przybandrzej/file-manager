@@ -51,6 +51,7 @@ public class UploadServiceImpl implements UploadService {
       ResourceFileDTO resource = resources.get(i);
       try(InputStream stream = file.getInputStream()) {
         storageService.store(PathUtils.getFileFullGeneratedName(resource), stream);
+        resource.setNotExists(false);
         if(backupMode != BackupProperties.BackupMode.FIRST_OFF) {
           resource.setBackUp(true);
           resource.setBackedUp(backupService.backup(resource, file.getInputStream()));
@@ -80,6 +81,7 @@ public class UploadServiceImpl implements UploadService {
     dto.setSizeUnit(FileSizeUnit.BYTE);
     dto.setBackUp(false);
     dto.setBackedUp(false);
+    dto.setNotExists(true);
     return dto;
   }
 

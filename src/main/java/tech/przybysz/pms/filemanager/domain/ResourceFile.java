@@ -46,6 +46,9 @@ public class ResourceFile implements Serializable {
   @Column(name = "back_up")
   private Boolean backUp;
 
+  @Column(name = "not_exists")
+  private Boolean notExists;
+
   @ManyToOne
   @JoinColumn(name = "parent_directory_id", referencedColumnName = "id", nullable = false)
   private Directory parentDirectory;
@@ -150,6 +153,14 @@ public class ResourceFile implements Serializable {
 
   public void setBackUp(Boolean backUp) {
     this.backUp = backUp;
+  }
+
+  public Boolean getNotExists() {
+    return notExists;
+  }
+
+  public void setNotExists(Boolean notExists) {
+    this.notExists = notExists;
   }
 
   @Override

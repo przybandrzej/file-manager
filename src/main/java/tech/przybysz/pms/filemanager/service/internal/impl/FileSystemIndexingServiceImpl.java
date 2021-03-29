@@ -57,26 +57,33 @@ public class FileSystemIndexingServiceImpl implements FileSystemIndexingService 
         ResourceFileDTO resourceFileDTO = mapper.toDto(resourceFile);
         String fileName = PathUtils.getFileFullGeneratedName(resourceFileDTO);
         log.debug("Processing file {}", resourceFileDTO);
-        File file = null;
-        File backedUp = null;
+        File file;
+        File backedUp;
         try {
           file = storageService.read(fileName);
         } catch(tech.przybysz.pms.filemanager.service.io.impl.FileNotFoundException ignored) {
+          file = null;
         }
         try {
           backedUp = backupService.read(fileName);
         } catch(tech.przybysz.pms.filemanager.service.io.impl.FileNotFoundException ignored) {
+          backedUp = null;
         }
         if(file == null || !file.exists()) {
           if(backedUp != null && backedUp.exists()) {
             log.debug("File does not exist in main storage");
             boolean saved = storageService.store(fileName, backedUp);
             log.debug("File restored to the main storage = {}", saved);
+            if(!saved) {
+              resourceFileDTO.setNotExists(true);
+            }
           } else {
             log.error("Could not restore file {} to the main storage", resourceFileDTO);
+            resourceFileDTO.setNotExists(true);
           }
+        } else {
+          resourceFileDTO = backupService.checkFileBackUp(resourceFileDTO, file);
         }
-        resourceFileDTO = backupService.checkFileBackUp(resourceFileDTO, file);
         content.add(mapper.toEntity(resourceFileDTO));
       }
       fileRepository.saveAll(content);

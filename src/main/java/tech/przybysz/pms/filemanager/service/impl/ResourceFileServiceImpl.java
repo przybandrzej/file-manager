@@ -81,6 +81,7 @@ public class ResourceFileServiceImpl implements ResourceFileService {
     file.setGeneratedName(fileDTO.getGeneratedName());
     file.setSize(fileDTO.getSize());
     file.setSizeUnit(fileDTO.getSizeUnit());
+    file.setNotExists(fileDTO.getNotExists());
     return mapper.toDto(fileRepository.save(file));
   }
 
@@ -91,6 +92,7 @@ public class ResourceFileServiceImpl implements ResourceFileService {
     }
     ResourceFile file = mapper.toEntity(fileDTO);
     file.setBackedUp(false);
+    file.setBackUp(false);
     file.setCreated(LocalDateTime.now());
     file.setModified(LocalDateTime.now());
     file.setGeneratedName(RandomUtil.generateFileNameSlug());

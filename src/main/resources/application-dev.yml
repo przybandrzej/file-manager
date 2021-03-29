@@ -48,6 +48,12 @@ server:
 storage:
   location: D:\storage
   backup:
-    execute: false
-    locations: []
+    execute: true
+    locations:
+      - D:\storage\backup
     mode: STRICT
+
+application:
+  indexing:
+    batch-size: 10
+    cron: 0 54 20 * * *

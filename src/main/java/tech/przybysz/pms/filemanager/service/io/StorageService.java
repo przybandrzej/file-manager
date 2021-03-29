@@ -9,4 +9,5 @@ public interface StorageService {
 
   File read(String fileName);
 
+  boolean store(String filename, File file);
 }

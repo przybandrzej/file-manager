@@ -1,5 +1,7 @@
 package tech.przybysz.pms.filemanager.service.io.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.przybysz.pms.filemanager.configuration.properties.BackupProperties;
@@ -9,8 +11,8 @@ import tech.przybysz.pms.filemanager.service.io.IOService;
 import tech.przybysz.pms.filemanager.service.util.PathUtils;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.FileNotFoundException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,6 +24,8 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class BackupServiceImpl implements BackupService {
+
+  private final Logger log = LoggerFactory.getLogger(BackupServiceImpl.class);
 
   private final Boolean execute;
   private final String[] locations;
@@ -74,5 +78,54 @@ public class BackupServiceImpl implements BackupService {
     storages.forEach(storage -> ioService.remove(name, storage));
     resourceFileDTO.setBackedUp(false);
     return true;
+  }
+
+  @Override
+  public File read(String filename) {
+    File file;
+    for(Path storage : storages) {
+      try {
+        file = ioService.read(filename, storage);
+      } catch(tech.przybysz.pms.filemanager.service.io.impl.FileNotFoundException e) {
+        continue;
+      }
+      return file;
+    }
+    throw new tech.przybysz.pms.filemanager.service.io.impl.FileNotFoundException("File not found", filename);
+  }
+
+  @Override
+  public ResourceFileDTO checkFileBackUp(ResourceFileDTO resourceFileDTO, File file) {
+    log.debug("Checking backups of file {}", resourceFileDTO);
+    log.debug("Application backup parameters: mode {}, execute {}, locations {}", mode, execute, storages.size());
+    String filename = PathUtils.getFileFullGeneratedName(resourceFileDTO);
+    if((resourceFileDTO.getBackUp() || mode == BackupProperties.BackupMode.STRICT) && Boolean.TRUE.equals(execute)) {
+      boolean saved = storages.stream().allMatch(storage -> {
+        File tmp = null;
+        try {
+          tmp = ioService.read(filename, storage);
+        } catch(tech.przybysz.pms.filemanager.service.io.impl.FileNotFoundException ignored) {
+        }
+        if(tmp == null || !tmp.exists()) {
+          if(file == null) {
+            return false;
+          }
+          try(InputStream stream = new FileInputStream(file)) {
+            return ioService.save(filename, stream, storage);
+          } catch(FileNotFoundException e) {
+            throw new tech.przybysz.pms.filemanager.service.io.impl.FileNotFoundException("File not found", filename);
+          } catch(IOException e) {
+            throw new StorageException("Failed to store file " + filename);
+          }
+        }
+        return true;
+      });
+      resourceFileDTO.setBackedUp(saved);
+    } else if((!execute && resourceFileDTO.getBackUp()) || (!resourceFileDTO.getBackUp() && mode != BackupProperties.BackupMode.STRICT)) {
+      boolean removed = storages.stream().allMatch(storage -> ioService.remove(filename, storage));
+      resourceFileDTO.setBackedUp(!removed);
+    }
+    log.debug("Indexing backups finished for file {}", resourceFileDTO);
+    return resourceFileDTO;
   }
 }

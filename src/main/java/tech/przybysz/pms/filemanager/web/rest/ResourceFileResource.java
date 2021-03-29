@@ -74,15 +74,6 @@ public class ResourceFileResource {
         .body(save);
   }
 
-  @PutMapping
-  public ResponseEntity<ResourceFileDTO> updateFile(@RequestBody ResourceFileDTO fileDTO) {
-    log.debug("REST request to update ResourceFile {}", fileDTO);
-    ResourceFileDTO save = fileService.update(fileDTO);
-    return ResponseEntity.ok()
-        .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, save.getId().toString()))
-        .body(save);
-  }
-
   @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ResourceFileDTO>> upload(@RequestParam Long directoryId, @RequestPart("file") List<MultipartFile> files) {
     log.debug("REST request to upload {} ResourceFiles to Directory {}", files.size(), directoryId);

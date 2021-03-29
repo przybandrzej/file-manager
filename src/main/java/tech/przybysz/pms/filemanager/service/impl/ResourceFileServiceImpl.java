@@ -61,7 +61,7 @@ public class ResourceFileServiceImpl implements ResourceFileService {
   }
 
   @Override
-  public ResourceFileDTO update(ResourceFileDTO fileDTO) {
+  public ResourceFileDTO updateInternal(ResourceFileDTO fileDTO) {
     Optional<ResourceFile> tmp = fileRepository.findById(fileDTO.getId());
     if(tmp.isEmpty()) {
       throw new EntityNotFoundException(ENTITY_NAME, fileDTO.getId());
@@ -75,7 +75,12 @@ public class ResourceFileServiceImpl implements ResourceFileService {
     file.setParentDirectory(directory.get());
     file.setExtension(fileDTO.getExtension());
     file.setOriginalName(fileDTO.getOriginalName());
+    file.setBackUp(fileDTO.getBackUp());
     file.setBackedUp(fileDTO.getBackedUp());
+    file.setCreated(fileDTO.getCreated());
+    file.setGeneratedName(fileDTO.getGeneratedName());
+    file.setSize(fileDTO.getSize());
+    file.setSizeUnit(fileDTO.getSizeUnit());
     return mapper.toDto(fileRepository.save(file));
   }
 
@@ -204,15 +209,15 @@ public class ResourceFileServiceImpl implements ResourceFileService {
     }
     ResourceFile resourceFile = tmp.get();
     ResourceFileDTO resourceFileDTO = mapper.toDto(resourceFile);
-    if(backUp == resourceFile.getBackUp()) {
-        return resourceFileDTO;
+    if(backUp == Boolean.TRUE.equals(resourceFile.getBackUp())) {
+      return resourceFileDTO;
     }
     if(resourceFile.getBackUp() && resourceFile.getBackedUp()) {
       // remove backup
       boolean deleted = backupService.deleteBackup(resourceFileDTO);
       resourceFile.setBackedUp(!deleted);
       resourceFile.setBackUp(backUp);
-    } else if(!resourceFile.getBackUp() && !resourceFile.getBackedUp()) {
+    } else if(Boolean.FALSE.equals(resourceFile.getBackUp()) && Boolean.FALSE.equals(resourceFile.getBackedUp())) {
       // add backup
       String fileName = PathUtils.getFileFullGeneratedName(resourceFileDTO);
       File file = storageService.read(fileName);
@@ -220,7 +225,7 @@ public class ResourceFileServiceImpl implements ResourceFileService {
       try {
         inputStream = new FileInputStream(file);
       } catch(FileNotFoundException e) {
-        throw new  tech.przybysz.pms.filemanager.service.io.impl.FileNotFoundException("File not found", fileName);
+        throw new tech.przybysz.pms.filemanager.service.io.impl.FileNotFoundException("File not found", fileName);
       }
       boolean backedUp = backupService.backup(resourceFileDTO, inputStream);
       resourceFile.setBackedUp(backedUp);

@@ -16,6 +16,7 @@ import tech.przybysz.pms.filemanager.service.io.impl.FileReadException;
 import tech.przybysz.pms.filemanager.service.util.PathUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,15 +49,15 @@ public class UploadServiceImpl implements UploadService {
     for(int i = 0; i < files.size(); i++) {
       MultipartFile file = files.get(i);
       ResourceFileDTO resource = resources.get(i);
-      try {
-        storageService.store(PathUtils.getFileFullGeneratedName(resource), file.getInputStream());
+      try(InputStream stream = file.getInputStream()) {
+        storageService.store(PathUtils.getFileFullGeneratedName(resource), stream);
         if(backupMode != BackupProperties.BackupMode.FIRST_OFF) {
           resource.setBackUp(true);
           resource.setBackedUp(backupService.backup(resource, file.getInputStream()));
         } else {
           resource.setBackUp(false);
         }
-        fileService.update(resource);
+        fileService.updateInternal(resource);
       } catch(IOException e) {
         throw new FileReadException("Could not read the file.", resource.getOriginalName() + "." + resource.getExtension());
       }
@@ -77,6 +78,8 @@ public class UploadServiceImpl implements UploadService {
     dto.setExtension(extension);
     dto.setSize(byteSize);
     dto.setSizeUnit(FileSizeUnit.BYTE);
+    dto.setBackUp(false);
+    dto.setBackedUp(false);
     return dto;
   }
 

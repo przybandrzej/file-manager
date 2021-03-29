@@ -19,6 +19,7 @@ CREATE TABLE resource_file
 (
     id                  bigint NOT NULL,
     backed_up           boolean,
+    back_up             boolean,
     created             timestamp without time zone,
     extension           character varying(255),
     generated_name      character varying(255),

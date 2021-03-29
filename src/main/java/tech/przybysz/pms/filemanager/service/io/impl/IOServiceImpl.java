@@ -1,9 +1,12 @@
 package tech.przybysz.pms.filemanager.service.io.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import tech.przybysz.pms.filemanager.service.impl.UploadServiceImpl;
 import tech.przybysz.pms.filemanager.service.io.IOService;
 
 import java.io.BufferedReader;
@@ -19,6 +22,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class IOServiceImpl implements IOService {
+
+  private final Logger log = LoggerFactory.getLogger(IOServiceImpl.class);
 
   @Override
   public boolean save(String filename, InputStream stream, Path storage) {
@@ -47,6 +52,7 @@ public class IOServiceImpl implements IOService {
 
   @Override
   public File read(String filename, Path storage) {
+    log.debug("Trying to read file {} from {}", filename, storage);
     if(filename == null || filename.isBlank()) {
       throw new FileNotFoundException("Could not read file. The name is empty.", filename);
     }

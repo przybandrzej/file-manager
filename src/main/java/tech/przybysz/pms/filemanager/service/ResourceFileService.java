@@ -10,7 +10,7 @@ public interface ResourceFileService {
 
   ResourceFileDTO create(ResourceFileDTO fileDTO);
 
-  ResourceFileDTO update(ResourceFileDTO fileDTO);
+  ResourceFileDTO updateInternal(ResourceFileDTO fileDTO);
 
   List<ResourceFileDTO> findAll();
 

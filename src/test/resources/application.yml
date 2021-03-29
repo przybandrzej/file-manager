@@ -47,4 +47,8 @@ storage:
     execute: false
     locations: []
     mode: STRICT
-    copies-count: 1
+
+application:
+  indexing:
+    batch-size: 10
+    cron: 0 8 22 * * *

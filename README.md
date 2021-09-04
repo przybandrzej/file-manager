@@ -2,7 +2,8 @@
 ## Description  
 Spring Boot application for managing files on local machine. In addition it can create backups of the files in other locations like external HDD etc. 
 It stores every file in the same root directory and changes its' names to random unique strings so they don't repeat. The structure of the directories and original names of the files are stored in the database.   
-The app can link multiple files with each other and display them together as collections helpful for the user. This feature is useful for linking similar files together or linking RAW photo with its improved JPG version (my personal use case).
+The app can link multiple files with each other and display them together as collections helpful for the user. This feature is useful for linking similar files together or linking RAW photo with its improved JPG version (my personal use case).  
+There is a plan to support Cloud Storages like Mega.nz, Google Drive etc. in the future.
 
 ## Build  
 Application uses Gradle. The default task is `bootRun` and the default Spring Profile is `dev`.  

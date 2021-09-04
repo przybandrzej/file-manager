@@ -17,5 +17,5 @@ To build the app use the `build` task:
   `gradlew build -Pdev`  
 If you want to add other profiles like `prod`, add `application-prod.yml` to `resources` directory and use the `-Pprod` flag.
 
-There is a `PostgreSQL` DB needed to run this application. The `dev` version uses ***locations_service*** db with the same user and password.  
+There is a `PostgreSQL` DB needed to run this application. The `dev` version uses ***file_manager*** db with the same user and password.  
 The app uses `Flyway` migration tool to create DB schema and tables at app start, so there is no need to configure it. Just run the app, tables will be create automaticly.
